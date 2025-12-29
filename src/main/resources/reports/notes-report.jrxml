@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" 
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports 
+              http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" 
+              name="notes-report" 
+              pageWidth="595" 
+              pageHeight="842" 
+              columnWidth="555" 
+              leftMargin="20" 
+              rightMargin="20" 
+              topMargin="20" 
+              bottomMargin="20">
+    
+    <property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
+    
+    <parameter name="coursCode" class="java.lang.String"/>
+    <parameter name="coursTitre" class="java.lang.String"/>
+    <parameter name="formateurNom" class="java.lang.String"/>
+    <parameter name="nombreInscrits" class="java.lang.Integer"/>
+    <parameter name="nombreNotes" class="java.lang.Integer"/>
+    <parameter name="tauxReussite" class="java.lang.Double"/>
+    <parameter name="dateGeneration" class="java.lang.String"/>
+    
+    <queryString>
+        <![CDATA[]]>
+    </queryString>
+    
+    <field name="etudiantNom" class="java.lang.String"/>
+    <field name="etudiantPrenom" class="java.lang.String"/>
+    <field name="valeur" class="java.lang.Double"/>
+    <field name="commentaire" class="java.lang.String"/>
+    <field name="dateAttribution" class="java.lang.String"/>
+    
+    <title>
+        <band height="100" splitType="Stretch">
+            <staticText>
+                <reportElement x="0" y="0" width="555" height="30" uuid="a1b2c3d4-e5f6-4789-a012-b3c4d5e6f789"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="18" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Rapport des Notes]]></text>
+            </staticText>
+            
+            <textField>
+                <reportElement x="0" y="35" width="555" height="20" uuid="b2c3d4e5-f6a7-4890-b123-c4d5e6f7a890"/>
+                <textElement textAlignment="Center">
+                    <font size="14" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[($P{coursCode} == null ? "" : $P{coursCode}) + " - " + ($P{coursTitre} == null ? "" : $P{coursTitre})]]></textFieldExpression>
+            </textField>
+            
+            <textField>
+                <reportElement x="0" y="60" width="555" height="15" uuid="c3d4e5f6-a7b8-4901-c234-d5e6f7a8b901"/>
+                <textElement textAlignment="Center">
+                    <font size="10"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Formateur: " + $P{formateurNom}]]></textFieldExpression>
+            </textField>
+            
+            <textField>
+                <reportElement x="0" y="80" width="555" height="15" uuid="d4e5f6a7-b8c9-4012-d345-e6f7a8b9c012"/>
+                <textElement textAlignment="Center">
+                    <font size="9" isItalic="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Date de génération: " + $P{dateGeneration}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+    
+    <pageHeader>
+        <band height="50" splitType="Stretch">
+            <staticText>
+                <reportElement x="0" y="0" width="100" height="20" uuid="e5f6a7b8-c9d0-4123-e456-f7a8b9c0d123"/>
+                <textElement>
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Nombre d'inscrits:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="100" y="0" width="50" height="20" uuid="f6a7b8c9-d0e1-4234-f567-a8b9c0d1e234"/>
+                <textElement>
+                    <font size="10"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{nombreInscrits}]]></textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="200" y="0" width="100" height="20" uuid="a7b8c9d0-e1f2-4345-a678-b9c0d1e2f345"/>
+                <textElement>
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Nombre de notes:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="300" y="0" width="50" height="20" uuid="b8c9d0e1-f2a3-4456-b789-c0d1e2f3a456"/>
+                <textElement>
+                    <font size="10"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{nombreNotes}]]></textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="380" y="0" width="100" height="20" uuid="c9d0e1f2-a3b4-4567-c890-d1e2f3a4b567"/>
+                <textElement>
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Taux de réussite:]]></text>
+            </staticText>
+            <textField pattern="#0.00 %">
+                <reportElement x="480" y="0" width="75" height="20" uuid="d0e1f2a3-b4c5-4678-d901-e2f3a4b5c678"/>
+                <textElement>
+                    <font size="10"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{tauxReussite} == null ? 0.0 : ($P{tauxReussite} / 100.0)]]></textFieldExpression>
+            </textField>
+            
+            <line>
+                <reportElement x="0" y="25" width="555" height="1" uuid="e1f2a3b4-c5d6-4789-e012-f3a4b5c6d789"/>
+            </line>
+            
+            <staticText>
+                <reportElement x="0" y="30" width="150" height="20" uuid="f2a3b4c5-d6e7-4890-f123-a4b5c6d7e890"/>
+                <box>
+                    <pen lineWidth="0.5"/>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Étudiant]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="150" y="30" width="80" height="20" uuid="a3b4c5d6-e7f8-4901-a234-b5c6d7e8f901"/>
+                <box>
+                    <pen lineWidth="0.5"/>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Note]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="230" y="30" width="200" height="20" uuid="b4c5d6e7-f8a9-4012-b345-c6d7e8f9a012"/>
+                <box>
+                    <pen lineWidth="0.5"/>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Commentaire]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="430" y="30" width="125" height="20" uuid="c5d6e7f8-a9b0-4123-c456-d7e8f9a0b123"/>
+                <box>
+                    <pen lineWidth="0.5"/>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Date]]></text>
+            </staticText>
+        </band>
+    </pageHeader>
+    
+    <detail>
+        <band height="25" splitType="Stretch">
+            <textField>
+                <reportElement x="0" y="0" width="150" height="25" uuid="d6e7f8a9-b0c1-4234-d567-e8f9a0b1c234"/>
+                <box>
+                    <pen lineWidth="0.5"/>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[($F{etudiantPrenom} == null ? "" : $F{etudiantPrenom}) + " " + ($F{etudiantNom} == null ? "" : $F{etudiantNom})]]></textFieldExpression>
+            </textField>
+            <textField pattern="#0.00">
+                <reportElement x="150" y="0" width="80" height="25" uuid="e7f8a9b0-c1d2-4345-e678-f9a0b1c2d345"/>
+                <box>
+                    <pen lineWidth="0.5"/>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{valeur}]]></textFieldExpression>
+            </textField>
+            <textField isStretchWithOverflow="true" isBlankWhenNull="true">
+                <reportElement x="230" y="0" width="200" height="25" uuid="f8a9b0c1-d2e3-4456-f789-a0b1c2d3e456"/>
+                <box>
+                    <pen lineWidth="0.5"/>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{commentaire} == null || $F{commentaire}.equals("") ? "-" : $F{commentaire}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="430" y="0" width="125" height="25" uuid="a9b0c1d2-e3f4-4567-a890-b1c2d3e4f567"/>
+                <box>
+                    <pen lineWidth="0.5"/>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{dateAttribution} == null || $F{dateAttribution}.equals("") ? "-" : $F{dateAttribution}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+    
+    <summary>
+        <band height="30" splitType="Stretch">
+            <line>
+                <reportElement x="0" y="0" width="555" height="1" uuid="b0c1d2e3-f4a5-4678-b901-c2d3e4f5a678"/>
+            </line>
+            <staticText>
+                <reportElement x="0" y="10" width="555" height="20" uuid="c1d2e3f4-a5b6-4789-c012-d3e4f5a6b789"/>
+                <textElement textAlignment="Center">
+                    <font size="9" isItalic="true"/>
+                </textElement>
+                <text><![CDATA[Rapport généré automatiquement par le système de gestion de formation]]></text>
+            </staticText>
+        </band>
+    </summary>
+</jasperReport>
+

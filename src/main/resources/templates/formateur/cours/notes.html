@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Notes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/formateur/dashboard">Gestion Formation</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/formateur/cours">Mes Cours</a>
+                <form th:action="@{/logout}" method="post" style="display:inline;">
+                    <button type="submit" class="nav-link btn btn-link" style="border:none; background:none; color:rgba(255,255,255,.55); padding:0.5rem 1rem;">Déconnexion</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <h1>Gestion des Notes</h1>
+        <h3 th:if="${cours != null}" th:text="'Cours: ' + ${cours.titre}"></h3>
+        
+        <div th:if="${error}" class="alert alert-danger mt-3" role="alert">
+            <span th:text="${error}"></span>
+        </div>
+        
+        <div class="mt-4">
+            <h4>Attribuer ou modifier des notes</h4>
+            <div th:if="${etudiantsInscrits != null && !etudiantsInscrits.isEmpty()}">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Étudiant</th>
+                            <th>Note actuelle</th>
+                            <th>Commentaire actuel</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="etudiant : ${etudiantsInscrits}">
+                            <td th:text="${etudiant.nom + ' ' + etudiant.prenom}"></td>
+                            <td>
+                                <span th:if="${notesMap != null && notesMap.containsKey(etudiant.id)}" 
+                                      th:text="${notesMap.get(etudiant.id).valeur}"></span>
+                                <span th:if="${notesMap == null || !notesMap.containsKey(etudiant.id)}">-</span>
+                            </td>
+                            <td>
+                                <span th:if="${notesMap != null && notesMap.containsKey(etudiant.id)}" 
+                                      th:text="${notesMap.get(etudiant.id).commentaire != null ? notesMap.get(etudiant.id).commentaire : '-'}"></span>
+                                <span th:if="${notesMap == null || !notesMap.containsKey(etudiant.id)}">-</span>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-primary btn-sm" 
+                                        th:onclick="'document.getElementById(\'form-' + ${etudiant.id} + '\').style.display = \'block\';'">
+                                    Attribuer/Modifier
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <!-- Formulaires pour attribuer/modifier les notes -->
+                <div th:each="etudiant : ${etudiantsInscrits}">
+                    <div class="card mt-3" th:id="'form-' + ${etudiant.id}" style="display:none;">
+                        <div class="card-body">
+                            <h5 class="card-title" th:text="'Note pour ' + ${etudiant.nom} + ' ' + ${etudiant.prenom}"></h5>
+                            <form th:action="@{/formateur/cours/{id}/notes(id=${cours.id})}" method="post">
+                                <input type="hidden" name="etudiantId" th:value="${etudiant.id}">
+                                <div class="mb-3">
+                                    <label for="valeur" class="form-label">Note (0-20)</label>
+                                    <input type="number" class="form-control" id="valeur" name="valeur" 
+                                           min="0" max="20" step="0.1" required
+                                           th:value="${notesMap != null && notesMap.containsKey(etudiant.id) ? notesMap.get(etudiant.id).valeur : ''}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="commentaire" class="form-label">Commentaire</label>
+                                    <textarea class="form-control" id="commentaire" name="commentaire" rows="3"
+                                              th:text="${notesMap != null && notesMap.containsKey(etudiant.id) ? (notesMap.get(etudiant.id).commentaire != null ? notesMap.get(etudiant.id).commentaire : '') : ''}"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-success">Enregistrer</button>
+                                <button type="button" class="btn btn-secondary" 
+                                        th:onclick="'document.getElementById(\'form-' + ${etudiant.id} + '\').style.display = \'none\';'">
+                                    Annuler
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${etudiantsInscrits == null || etudiantsInscrits.isEmpty()}" class="alert alert-info">
+                Aucun étudiant inscrit à ce cours pour le moment.
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <h4>Historique des notes</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Étudiant</th>
+                        <th>Note</th>
+                        <th>Commentaire</th>
+                        <th>Date d'attribution</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${notes != null && !notes.isEmpty()}" th:each="note : ${notes}">
+                        <td th:text="${note.etudiant.nom + ' ' + note.etudiant.prenom}"></td>
+                        <td th:text="${note.valeur}"></td>
+                        <td th:text="${note.commentaire != null ? note.commentaire : '-'}"></td>
+                        <td th:text="${note.dateAttribution != null ? #temporals.format(note.dateAttribution, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+                    </tr>
+                    <tr th:if="${notes == null || notes.isEmpty()}">
+                        <td colspan="4" class="text-center">Aucune note attribuée pour le moment.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-4">
+            <a th:href="@{/formateur/cours}" class="btn btn-secondary">Retour aux cours</a>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

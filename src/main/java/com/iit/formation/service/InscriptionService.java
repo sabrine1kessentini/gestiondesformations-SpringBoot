@@ -47,8 +47,29 @@ public class InscriptionService {
     }
     
     public Inscription inscrireEtudiant(Long etudiantId, Long coursId) {
-        if (inscriptionRepository.existsByEtudiantIdAndCoursId(etudiantId, coursId)) {
-            throw new RuntimeException("L'étudiant est déjà inscrit à ce cours");
+        // Vérifier si une inscription existe déjà (active ou annulée)
+        Optional<Inscription> inscriptionExistante = inscriptionRepository
+                .findByEtudiantIdAndCoursId(etudiantId, coursId);
+        
+        if (inscriptionExistante.isPresent()) {
+            Inscription inscription = inscriptionExistante.get();
+            // Si l'inscription est annulée, on peut la réactiver
+            if (inscription.getStatut() == StatutInscription.ANNULEE) {
+                inscription.setStatut(StatutInscription.ACTIVE);
+                inscription.setDateInscription(java.time.LocalDateTime.now());
+                inscription = inscriptionRepository.save(inscription);
+                
+                // Envoyer un email de notification
+                try {
+                    emailService.envoyerEmailInscription(inscription.getEtudiant(), inscription.getCours());
+                } catch (Exception e) {
+                    System.err.println("Erreur lors de l'envoi de l'email: " + e.getMessage());
+                }
+                
+                return inscription;
+            } else {
+                throw new RuntimeException("L'étudiant est déjà inscrit à ce cours");
+            }
         }
         
         Etudiant etudiant = etudiantRepository.findById(etudiantId)

@@ -7,7 +7,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin")
@@ -33,6 +35,15 @@ public class AdminController {
     
     @Autowired
     private ReportingService reportingService;
+    
+    @Autowired
+    private SeanceService seanceService;
+    
+    @Autowired
+    private PDFReportService pdfReportService;
+    
+    @Autowired
+    private NoteService noteService;
     
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
@@ -129,11 +140,15 @@ public class AdminController {
     
     @GetMapping("/cours/new")
     public String newCoursForm(Model model) {
-        model.addAttribute("cours", new Cours());
-        model.addAttribute("formateurs", formateurService.getAllFormateurs());
-        model.addAttribute("specialites", specialiteService.getAllSpecialites());
-        model.addAttribute("sessions", sessionService.getAllSessions());
-        model.addAttribute("groupes", groupeService.getAllGroupes());
+        try {
+            model.addAttribute("cours", new Cours());
+            model.addAttribute("formateurs", formateurService.getAllFormateurs());
+            model.addAttribute("specialites", specialiteService.getAllSpecialites());
+            model.addAttribute("sessions", sessionService.getAllSessions());
+            model.addAttribute("groupes", groupeService.getAllGroupes());
+        } catch (Exception e) {
+            model.addAttribute("error", "Erreur lors du chargement du formulaire: " + e.getMessage());
+        }
         return "admin/cours/form";
     }
     
@@ -280,7 +295,13 @@ public class AdminController {
     // Gestion des sessions
     @GetMapping("/sessions")
     public String listSessions(Model model) {
-        model.addAttribute("sessions", sessionService.getAllSessions());
+        try {
+            List<Session> sessions = sessionService.getAllSessions();
+            model.addAttribute("sessions", sessions != null ? sessions : new ArrayList<>());
+        } catch (Exception e) {
+            model.addAttribute("sessions", new ArrayList<>());
+            model.addAttribute("error", "Erreur lors du chargement des sessions: " + e.getMessage());
+        }
         return "admin/sessions/list";
     }
     
@@ -314,6 +335,148 @@ public class AdminController {
     public String deleteSession(@PathVariable Long id) {
         sessionService.deleteSession(id);
         return "redirect:/admin/sessions";
+    }
+    
+    // Gestion des séances
+    @GetMapping("/seances")
+    public String listSeances(Model model) {
+        try {
+            model.addAttribute("seances", seanceService.getAllSeances());
+        } catch (Exception e) {
+            model.addAttribute("seances", new ArrayList<>());
+            model.addAttribute("error", "Erreur lors du chargement des séances: " + e.getMessage());
+        }
+        return "admin/seances/list";
+    }
+    
+    @GetMapping("/seances/new")
+    public String newSeanceForm(Model model) {
+        try {
+            model.addAttribute("seance", new com.iit.formation.entity.Seance());
+            model.addAttribute("coursList", coursService.getAllCours());
+        } catch (Exception e) {
+            model.addAttribute("error", "Erreur lors du chargement du formulaire: " + e.getMessage());
+        }
+        return "admin/seances/form";
+    }
+    
+    @PostMapping("/seances")
+    public String createSeance(@RequestParam Long coursId,
+                               @RequestParam String dateHeureDebut,
+                               @RequestParam String dateHeureFin,
+                               @RequestParam String salle,
+                               @RequestParam(required = false) String type,
+                               Model model) {
+        try {
+            // Convertir le format datetime-local (yyyy-MM-ddTHH:mm) en LocalDateTime
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+            java.time.LocalDateTime debut = java.time.LocalDateTime.parse(dateHeureDebut, formatter);
+            java.time.LocalDateTime fin = java.time.LocalDateTime.parse(dateHeureFin, formatter);
+            seanceService.planifierSeance(coursId, debut, fin, salle, type);
+            return "redirect:/admin/seances";
+        } catch (Exception e) {
+            model.addAttribute("error", "Erreur lors de la création de la séance: " + e.getMessage());
+            model.addAttribute("seance", new com.iit.formation.entity.Seance());
+            model.addAttribute("coursList", coursService.getAllCours());
+            return "admin/seances/form";
+        }
+    }
+    
+    @GetMapping("/seances/{id}/edit")
+    public String editSeanceForm(@PathVariable Long id, Model model) {
+        try {
+            seanceService.getSeanceById(id).ifPresent(seance -> {
+                model.addAttribute("seance", seance);
+                model.addAttribute("coursList", coursService.getAllCours());
+            });
+        } catch (Exception e) {
+            model.addAttribute("error", "Erreur lors du chargement: " + e.getMessage());
+        }
+        return "admin/seances/form";
+    }
+    
+    @PostMapping("/seances/{id}")
+    public String updateSeance(@PathVariable Long id,
+                               @RequestParam String dateHeureDebut,
+                               @RequestParam String dateHeureFin,
+                               @RequestParam String salle,
+                               @RequestParam(required = false) String type,
+                               Model model) {
+        try {
+            // Convertir le format datetime-local (yyyy-MM-ddTHH:mm) en LocalDateTime
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+            java.time.LocalDateTime debut = java.time.LocalDateTime.parse(dateHeureDebut, formatter);
+            java.time.LocalDateTime fin = java.time.LocalDateTime.parse(dateHeureFin, formatter);
+            seanceService.updateSeance(id, debut, fin, salle, type);
+            return "redirect:/admin/seances";
+        } catch (Exception e) {
+            model.addAttribute("error", "Erreur lors de la modification: " + e.getMessage());
+            seanceService.getSeanceById(id).ifPresent(seance -> {
+                model.addAttribute("seance", seance);
+                model.addAttribute("coursList", coursService.getAllCours());
+            });
+            return "admin/seances/form";
+        }
+    }
+    
+    @PostMapping("/seances/{id}/delete")
+    public String deleteSeance(@PathVariable Long id) {
+        seanceService.deleteSeance(id);
+        return "redirect:/admin/seances";
+    }
+    
+    // Planifier une séance pour un cours spécifique
+    @GetMapping("/cours/{coursId}/seances/new")
+    public String newSeanceForCoursForm(@PathVariable Long coursId, Model model) {
+        try {
+            model.addAttribute("seance", new com.iit.formation.entity.Seance());
+            coursService.getCoursById(coursId).ifPresent(cours -> {
+                model.addAttribute("cours", cours);
+            });
+            model.addAttribute("coursList", coursService.getAllCours());
+        } catch (Exception e) {
+            model.addAttribute("error", "Erreur lors du chargement: " + e.getMessage());
+        }
+        return "admin/seances/form";
+    }
+    
+    // Statistiques et rapport PDF pour un cours
+    @GetMapping("/cours/{coursId}/statistiques")
+    public String statistiquesCours(@PathVariable Long coursId, Model model) {
+        try {
+            Cours cours = coursService.getCoursById(coursId)
+                    .orElseThrow(() -> new RuntimeException("Cours non trouvé"));
+            
+            Map<String, Object> stats = reportingService.getStatistiquesCours(coursId);
+            model.addAttribute("stats", stats);
+            model.addAttribute("cours", cours);
+            model.addAttribute("notes", noteService.getNotesByCours(coursId));
+        } catch (Exception e) {
+            model.addAttribute("error", "Erreur lors du chargement: " + e.getMessage());
+        }
+        return "admin/cours/statistiques";
+    }
+    
+    @GetMapping("/cours/{coursId}/rapport-pdf")
+    public org.springframework.http.ResponseEntity<?> genererRapportPDF(@PathVariable Long coursId, Model model) {
+        try {
+            byte[] pdfBytes = pdfReportService.genererRapportNotes(coursId);
+            
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "rapport-notes-" + coursId + ".pdf");
+            headers.setContentLength(pdfBytes.length);
+            
+            return new org.springframework.http.ResponseEntity<>(pdfBytes, headers, org.springframework.http.HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Rediriger vers la page statistiques avec un message d'erreur
+            model.addAttribute("error", "Erreur lors de la génération du PDF: " + e.getMessage());
+            return new org.springframework.http.ResponseEntity<>(
+                "Erreur lors de la génération du PDF: " + e.getMessage() + 
+                (e.getCause() != null ? " - Cause: " + e.getCause().getMessage() : ""), 
+                org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
 

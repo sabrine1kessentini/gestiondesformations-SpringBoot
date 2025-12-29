@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="|${seance.id != null ? 'Modifier' : 'Nouvelle'} Séance|">Formulaire Séance</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/dashboard">Gestion Formation</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin/seances">Retour</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <h1 th:text="|${seance.id != null ? 'Modifier' : 'Nouvelle'} Séance|">Formulaire</h1>
+        
+        <div th:if="${error != null}" class="alert alert-danger" th:text="${error}"></div>
+        
+        <form th:action="${seance.id != null ? ('/admin/seances/' + seance.id) : '/admin/seances'}" 
+              method="post">
+            <div class="mb-3">
+                <label for="coursId" class="form-label">Cours</label>
+                <select th:if="${cours == null}" class="form-control" id="coursId" name="coursId" required>
+                    <option value="">Sélectionner un cours</option>
+                    <option th:each="c : ${coursList}" 
+                            th:value="${c.id}" 
+                            th:selected="${seance.cours != null && seance.cours.id == c.id}"
+                            th:disabled="${c.formateur == null}"
+                            th:text="${c.formateur == null ? (c.titre + ' (⚠ Pas de formateur)') : c.titre}"></option>
+                </select>
+                <div th:if="${cours != null}">
+                    <input type="text" class="form-control" th:value="${cours.titre}" readonly>
+                    <input type="hidden" name="coursId" th:value="${cours.id}">
+                    <small class="form-text text-danger" th:if="${cours.formateur == null}">
+                        ⚠ Attention : Ce cours n'a pas de formateur assigné. Vous devez d'abord assigner un formateur au cours.
+                    </small>
+                </div>
+                <small class="form-text text-muted">Seuls les cours avec un formateur assigné peuvent avoir des séances planifiées.</small>
+            </div>
+            <div class="mb-3">
+                <label for="dateHeureDebut" class="form-label">Date et heure de début</label>
+                <input type="datetime-local" class="form-control" id="dateHeureDebut" 
+                       name="dateHeureDebut" required
+                       th:value="${seance.dateHeureDebut != null ? (#strings.replace(#temporals.format(seance.dateHeureDebut, 'yyyy-MM-dd HH:mm'), ' ', 'T')) : ''}">
+            </div>
+            <div class="mb-3">
+                <label for="dateHeureFin" class="form-label">Date et heure de fin</label>
+                <input type="datetime-local" class="form-control" id="dateHeureFin" 
+                       name="dateHeureFin" required
+                       th:value="${seance.dateHeureFin != null ? (#strings.replace(#temporals.format(seance.dateHeureFin, 'yyyy-MM-dd HH:mm'), ' ', 'T')) : ''}">
+            </div>
+            <div class="mb-3">
+                <label for="salle" class="form-label">Salle</label>
+                <input type="text" class="form-control" id="salle" name="salle" required
+                       th:value="${seance.salle != null ? seance.salle : ''}">
+            </div>
+            <div class="mb-3">
+                <label for="type" class="form-label">Type</label>
+                <select class="form-control" id="type" name="type">
+                    <option value="">Sélectionner un type</option>
+                    <option value="CM" th:selected="${seance.type == 'CM'}">CM (Cours Magistral)</option>
+                    <option value="TD" th:selected="${seance.type == 'TD'}">TD (Travaux Dirigés)</option>
+                    <option value="TP" th:selected="${seance.type == 'TP'}">TP (Travaux Pratiques)</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+            <a th:href="${cours != null ? '/admin/cours' : '/admin/seances'}" class="btn btn-secondary">Annuler</a>
+        </form>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

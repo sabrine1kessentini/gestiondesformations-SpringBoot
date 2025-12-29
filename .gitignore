@@ -13,6 +13,11 @@ target/
 *.swo
 *~
 
+# H2 Database files (données persistantes)
+data/
+*.mv.db
+*.trace.db
+
 
 
 

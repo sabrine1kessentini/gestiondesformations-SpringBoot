@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques du Cours</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link th:href="@{/css/custom.css}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/dashboard">Gestion Formation</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin/cours">Retour aux cours</a>
+                <form th:action="@{/logout}" method="post" style="display:inline;">
+                    <button type="submit" class="nav-link btn btn-link" style="border:none; background:none; color:rgba(255,255,255,.55); padding:0.5rem 1rem;">Déconnexion</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="page-title">
+                <i class="bi bi-graph-up-arrow"></i> Statistiques du Cours
+            </h1>
+            <a th:href="@{/admin/cours/{id}/rapport-pdf(id=${cours.id})}" class="btn btn-primary btn-lg" target="_blank">
+                <i class="bi bi-file-pdf-fill"></i> Télécharger le rapport PDF
+            </a>
+        </div>
+        
+        <div th:if="${error != null}" class="alert alert-danger" th:text="${error}"></div>
+        
+        <div th:if="${cours != null}">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 th:text="${cours.code + ' - ' + cours.titre}"></h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Formateur:</strong> <span th:text="${cours.formateur != null ? (cours.formateur.prenom + ' ' + cours.formateur.nom) : 'N/A'}"></span></p>
+                            <p><strong>Spécialité:</strong> <span th:text="${cours.specialite != null ? cours.specialite.nom : 'N/A'}"></span></p>
+                            <p><strong>Session:</strong> <span th:text="${cours.session != null ? cours.session.nom : 'N/A'}"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Description:</strong> <span th:text="${cours.description != null ? cours.description : 'Aucune description'}"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="stat-card bg-gradient-primary">
+                    <h5><i class="bi bi-people-fill"></i> Nombre d'inscrits</h5>
+                    <p class="stat-value" th:text="${stats.nombreInscrits}">0</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card bg-gradient-success">
+                    <h5><i class="bi bi-star-fill"></i> Nombre de notes</h5>
+                    <p class="stat-value" th:text="${stats.nombreNotes}">0</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card bg-gradient-info">
+                    <h5><i class="bi bi-trophy-fill"></i> Taux de réussite</h5>
+                    <p class="stat-value" th:text="${#numbers.formatDecimal(stats.tauxReussite, 1, 2)} + '%'">0%</p>
+                </div>
+            </div>
+            </div>
+            
+            <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-star-fill"></i> Détail des notes</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Étudiant</th>
+                                <th>Note</th>
+                                <th>Statut</th>
+                                <th>Commentaire</th>
+                                <th>Date d'attribution</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:if="${notes != null && !notes.isEmpty()}" th:each="note : ${notes}">
+                                <td th:text="${note.etudiant.prenom + ' ' + note.etudiant.nom}"></td>
+                                <td th:text="${note.valeur}"></td>
+                                <td>
+                                    <span th:if="${note.valeur >= 10}" class="badge bg-success">Réussi</span>
+                                    <span th:if="${note.valeur < 10}" class="badge bg-danger">Échoué</span>
+                                </td>
+                                <td th:text="${note.commentaire != null ? note.commentaire : '-'}"></td>
+                                <td th:text="${note.dateAttribution != null ? #temporals.format(note.dateAttribution, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+                            </tr>
+                            <tr th:if="${notes == null || notes.isEmpty()}">
+                                <td colspan="5" class="text-center">Aucune note attribuée pour ce cours.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

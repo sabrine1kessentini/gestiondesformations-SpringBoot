@@ -39,11 +39,34 @@ public class SeanceService {
         Cours cours = coursRepository.findById(coursId)
                 .orElseThrow(() -> new RuntimeException("Cours non trouvé"));
         
+        // Vérifier que le cours a un formateur
+        if (cours.getFormateur() == null) {
+            throw new RuntimeException("Le cours doit avoir un formateur assigné pour planifier une séance");
+        }
+        
         // Vérifier les conflits pour le formateur
         List<Seance> conflitsFormateur = seanceRepository.findConflitsFormateur(
                 cours.getFormateur().getId(), dateHeureDebut, dateHeureFin);
         if (!conflitsFormateur.isEmpty()) {
-            throw new RuntimeException("Conflit d'horaires pour le formateur");
+            throw new RuntimeException("Conflit d'horaires : Le formateur " + cours.getFormateur().getPrenom() + " " + cours.getFormateur().getNom() + 
+                    " a déjà une séance planifiée à ce moment");
+        }
+        
+        // Vérifier les conflits pour tous les étudiants inscrits au cours (inscriptions actives uniquement)
+        List<com.iit.formation.entity.Inscription> inscriptionsActives = cours.getInscriptions().stream()
+                .filter(ins -> ins.getStatut() == com.iit.formation.entity.Inscription.StatutInscription.ACTIVE)
+                .toList();
+        
+        for (com.iit.formation.entity.Inscription inscription : inscriptionsActives) {
+            List<Seance> conflitsEtudiant = seanceRepository.findConflitsEtudiant(
+                    inscription.getEtudiant().getId(), dateHeureDebut, dateHeureFin);
+            // Exclure les séances du cours actuel (un étudiant peut avoir plusieurs séances du même cours)
+            conflitsEtudiant.removeIf(s -> s.getCours().getId().equals(coursId));
+            if (!conflitsEtudiant.isEmpty()) {
+                throw new RuntimeException("Conflit d'horaires : L'étudiant " + inscription.getEtudiant().getPrenom() + " " + 
+                        inscription.getEtudiant().getNom() + " a déjà une séance planifiée à ce moment dans le cours \"" + 
+                        conflitsEtudiant.get(0).getCours().getTitre() + "\"");
+            }
         }
         
         Seance seance = new Seance(dateHeureDebut, dateHeureFin, salle, cours);
@@ -57,12 +80,37 @@ public class SeanceService {
         Seance seance = seanceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Séance non trouvée"));
         
+        Cours cours = seance.getCours();
+        
+        // Vérifier que le cours a un formateur
+        if (cours.getFormateur() == null) {
+            throw new RuntimeException("Le cours doit avoir un formateur assigné pour modifier une séance");
+        }
+        
         // Vérifier les conflits pour le formateur (exclure la séance actuelle)
         List<Seance> conflitsFormateur = seanceRepository.findConflitsFormateur(
-                seance.getCours().getFormateur().getId(), dateHeureDebut, dateHeureFin);
+                cours.getFormateur().getId(), dateHeureDebut, dateHeureFin);
         conflitsFormateur.removeIf(s -> s.getId().equals(id));
         if (!conflitsFormateur.isEmpty()) {
-            throw new RuntimeException("Conflit d'horaires pour le formateur");
+            throw new RuntimeException("Conflit d'horaires : Le formateur " + cours.getFormateur().getPrenom() + " " + 
+                    cours.getFormateur().getNom() + " a déjà une séance planifiée à ce moment");
+        }
+        
+        // Vérifier les conflits pour tous les étudiants inscrits au cours (inscriptions actives uniquement)
+        List<com.iit.formation.entity.Inscription> inscriptionsActives = cours.getInscriptions().stream()
+                .filter(ins -> ins.getStatut() == com.iit.formation.entity.Inscription.StatutInscription.ACTIVE)
+                .toList();
+        
+        for (com.iit.formation.entity.Inscription inscription : inscriptionsActives) {
+            List<Seance> conflitsEtudiant = seanceRepository.findConflitsEtudiant(
+                    inscription.getEtudiant().getId(), dateHeureDebut, dateHeureFin);
+            // Exclure la séance actuelle et les autres séances du même cours
+            conflitsEtudiant.removeIf(s -> s.getId().equals(id) || s.getCours().getId().equals(cours.getId()));
+            if (!conflitsEtudiant.isEmpty()) {
+                throw new RuntimeException("Conflit d'horaires : L'étudiant " + inscription.getEtudiant().getPrenom() + " " + 
+                        inscription.getEtudiant().getNom() + " a déjà une séance planifiée à ce moment dans le cours \"" + 
+                        conflitsEtudiant.get(0).getCours().getTitre() + "\"");
+            }
         }
         
         seance.setDateHeureDebut(dateHeureDebut);

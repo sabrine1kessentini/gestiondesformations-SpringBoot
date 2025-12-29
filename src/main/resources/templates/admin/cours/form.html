@@ -19,6 +19,8 @@
     <div class="container mt-4">
         <h1 th:text="${cours.id != null ? 'Modifier' : 'Nouveau'} + ' Cours'">Formulaire</h1>
         
+        <div th:if="${error != null}" class="alert alert-danger" th:text="${error}"></div>
+        
         <form th:action="${cours.id != null ? '/admin/cours/' + cours.id : '/admin/cours'}" 
               th:object="${cours}" method="post">
             <div class="mb-3">
@@ -57,10 +59,10 @@
                 <label for="session" class="form-label">Session</label>
                 <select class="form-control" id="session" name="session.id">
                     <option value="">Aucune</option>
-                    <option th:each="session : ${sessions}" 
-                            th:value="${session.id}" 
-                            th:selected="${cours.session != null && cours.session.id == session.id}"
-                            th:text="${session.nom}"></option>
+                    <option th:each="sess : ${sessions}" 
+                            th:value="${sess.id}" 
+                            th:selected="${cours.session != null && cours.session.id == sess.id}"
+                            th:text="${sess.nom}"></option>
                 </select>
             </div>
             <div class="mb-3">

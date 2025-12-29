@@ -64,10 +64,18 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 ### Base de données
 
-Pour MySQL, créer la base de données :
+**Persistance des données** : Par défaut, l'application utilise H2 avec un fichier (`./data/gestion_formation.mv.db`) pour persister toutes les données entre les redémarrages. Toutes les opérations (création d'étudiants, cours, séances, notes, inscriptions, etc.) sont automatiquement sauvegardées.
+
+**Pour MySQL**, créer la base de données :
 ```sql
 CREATE DATABASE gestion_formation;
 ```
+
+Puis décommenter les lignes MySQL dans `application.properties` et commenter les lignes H2.
+
+**Note importante** : 
+- `ddl-auto=update` : Conserve toutes les données (recommandé)
+- `ddl-auto=create-drop` : Supprime toutes les données à chaque redémarrage (à éviter pour la persistance)
 
 ## API REST
 

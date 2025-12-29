@@ -55,6 +55,8 @@ public class NoteService {
         note.setCours(cours);
         note.setValeur(valeur);
         note.setCommentaire(commentaire);
+        // Mettre à jour la date d'attribution si c'est une nouvelle note ou une modification
+        note.setDateAttribution(java.time.LocalDateTime.now());
         
         return noteRepository.save(note);
     }

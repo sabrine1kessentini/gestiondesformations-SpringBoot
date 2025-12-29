@@ -5,7 +5,9 @@ import com.iit.formation.entity.Etudiant;
 import com.iit.formation.entity.Note;
 import com.iit.formation.repository.CoursRepository;
 import com.iit.formation.repository.EtudiantRepository;
+import com.iit.formation.repository.FormateurRepository;
 import com.iit.formation.repository.NoteRepository;
+import com.iit.formation.repository.SessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,12 @@ public class ReportingService {
     
     @Autowired
     private NoteRepository noteRepository;
+    
+    @Autowired
+    private FormateurRepository formateurRepository;
+    
+    @Autowired
+    private SessionRepository sessionRepository;
     
     public Map<String, Object> getStatistiquesEtudiant(Long etudiantId) {
         Etudiant etudiant = etudiantRepository.findById(etudiantId)
@@ -59,6 +67,8 @@ public class ReportingService {
         Map<String, Object> dashboard = new HashMap<>();
         dashboard.put("totalEtudiants", etudiantRepository.count());
         dashboard.put("totalCours", coursRepository.count());
+        dashboard.put("totalFormateurs", formateurRepository.count());
+        dashboard.put("totalSessions", sessionRepository.count());
         dashboard.put("coursLesPlusSuivis", getCoursLesPlusSuivis());
         
         return dashboard;
