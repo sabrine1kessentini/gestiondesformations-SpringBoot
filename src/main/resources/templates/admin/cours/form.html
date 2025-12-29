@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${cours.id != null ? 'Modifier' : 'Nouveau'} + ' Cours'">Formulaire Cours</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/dashboard">Gestion Formation</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin/cours">Retour</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <h1 th:text="${cours.id != null ? 'Modifier' : 'Nouveau'} + ' Cours'">Formulaire</h1>
+        
+        <form th:action="${cours.id != null ? '/admin/cours/' + cours.id : '/admin/cours'}" 
+              th:object="${cours}" method="post">
+            <div class="mb-3">
+                <label for="code" class="form-label">Code</label>
+                <input type="text" class="form-control" id="code" th:field="*{code}" required>
+            </div>
+            <div class="mb-3">
+                <label for="titre" class="form-label">Titre</label>
+                <input type="text" class="form-control" id="titre" th:field="*{titre}" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" th:field="*{description}" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="formateur" class="form-label">Formateur</label>
+                <select class="form-control" id="formateur" name="formateur.id" required>
+                    <option value="">Sélectionner un formateur</option>
+                    <option th:each="formateur : ${formateurs}" 
+                            th:value="${formateur.id}" 
+                            th:selected="${cours.formateur != null && cours.formateur.id == formateur.id}"
+                            th:text="${formateur.prenom + ' ' + formateur.nom}"></option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="specialite" class="form-label">Spécialité</label>
+                <select class="form-control" id="specialite" name="specialite.id">
+                    <option value="">Aucune</option>
+                    <option th:each="specialite : ${specialites}" 
+                            th:value="${specialite.id}" 
+                            th:selected="${cours.specialite != null && cours.specialite.id == specialite.id}"
+                            th:text="${specialite.nom}"></option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="session" class="form-label">Session</label>
+                <select class="form-control" id="session" name="session.id">
+                    <option value="">Aucune</option>
+                    <option th:each="session : ${sessions}" 
+                            th:value="${session.id}" 
+                            th:selected="${cours.session != null && cours.session.id == session.id}"
+                            th:text="${session.nom}"></option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Groupes</label>
+                <div th:each="groupe : ${groupes}">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" 
+                               th:id="${'groupe_' + groupe.id}"
+                               th:value="${groupe.id}"
+                               name="groupeIds"
+                               th:checked="${cours.groupes != null && cours.groupes.?[id == groupe.id].size() > 0}">
+                        <label class="form-check-label" th:for="${'groupe_' + groupe.id}" th:text="${groupe.nom}"></label>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+            <a href="/admin/cours" class="btn btn-secondary">Annuler</a>
+        </form>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

@@ -100,6 +100,26 @@ public class AdminController {
         return "redirect:/admin/formateurs";
     }
     
+    @GetMapping("/formateurs/{id}/edit")
+    public String editFormateurForm(@PathVariable Long id, Model model) {
+        formateurService.getFormateurById(id).ifPresent(formateur -> {
+            model.addAttribute("formateur", formateur);
+        });
+        return "admin/formateurs/form";
+    }
+    
+    @PostMapping("/formateurs/{id}")
+    public String updateFormateur(@PathVariable Long id, @ModelAttribute Formateur formateur) {
+        formateurService.updateFormateur(id, formateur);
+        return "redirect:/admin/formateurs";
+    }
+    
+    @PostMapping("/formateurs/{id}/delete")
+    public String deleteFormateur(@PathVariable Long id) {
+        formateurService.deleteFormateur(id);
+        return "redirect:/admin/formateurs";
+    }
+    
     // Gestion des cours
     @GetMapping("/cours")
     public String listCours(Model model) {
@@ -118,8 +138,64 @@ public class AdminController {
     }
     
     @PostMapping("/cours")
-    public String createCours(@ModelAttribute Cours cours) {
-        coursService.createCours(cours);
+    public String createCours(@ModelAttribute Cours cours, @RequestParam(required = false) List<Long> groupeIds) {
+        Cours coursCree = coursService.createCours(cours);
+        if (groupeIds != null && !groupeIds.isEmpty()) {
+            for (Long groupeId : groupeIds) {
+                coursService.ajouterGroupe(coursCree.getId(), groupeId);
+            }
+        }
+        return "redirect:/admin/cours";
+    }
+    
+    @GetMapping("/cours/{id}/edit")
+    public String editCoursForm(@PathVariable Long id, Model model) {
+        coursService.getCoursById(id).ifPresent(cours -> {
+            model.addAttribute("cours", cours);
+            model.addAttribute("formateurs", formateurService.getAllFormateurs());
+            model.addAttribute("specialites", specialiteService.getAllSpecialites());
+            model.addAttribute("sessions", sessionService.getAllSessions());
+            model.addAttribute("groupes", groupeService.getAllGroupes());
+        });
+        return "admin/cours/form";
+    }
+    
+    @PostMapping("/cours/{id}")
+    public String updateCours(@PathVariable Long id, @ModelAttribute Cours cours, @RequestParam(required = false) List<Long> groupeIds) {
+        Cours coursExistant = coursService.getCoursById(id).orElse(null);
+        if (coursExistant != null) {
+            // Sauvegarder les groupes actuels
+            List<Long> groupesActuels = coursExistant.getGroupes().stream()
+                    .map(g -> g.getId())
+                    .toList();
+            
+            // Mettre à jour le cours
+            coursService.updateCours(id, cours);
+            
+            // Retirer les groupes non sélectionnés
+            if (groupesActuels != null) {
+                for (Long groupeId : groupesActuels) {
+                    if (groupeIds == null || !groupeIds.contains(groupeId)) {
+                        coursService.retirerGroupe(id, groupeId);
+                    }
+                }
+            }
+            
+            // Ajouter les nouveaux groupes
+            if (groupeIds != null) {
+                for (Long groupeId : groupeIds) {
+                    if (groupesActuels == null || !groupesActuels.contains(groupeId)) {
+                        coursService.ajouterGroupe(id, groupeId);
+                    }
+                }
+            }
+        }
+        return "redirect:/admin/cours";
+    }
+    
+    @PostMapping("/cours/{id}/delete")
+    public String deleteCours(@PathVariable Long id) {
+        coursService.deleteCours(id);
         return "redirect:/admin/cours";
     }
     
@@ -142,6 +218,26 @@ public class AdminController {
         return "redirect:/admin/groupes";
     }
     
+    @GetMapping("/groupes/{id}/edit")
+    public String editGroupeForm(@PathVariable Long id, Model model) {
+        groupeService.getGroupeById(id).ifPresent(groupe -> {
+            model.addAttribute("groupe", groupe);
+        });
+        return "admin/groupes/form";
+    }
+    
+    @PostMapping("/groupes/{id}")
+    public String updateGroupe(@PathVariable Long id, @ModelAttribute Groupe groupe) {
+        groupeService.updateGroupe(id, groupe);
+        return "redirect:/admin/groupes";
+    }
+    
+    @PostMapping("/groupes/{id}/delete")
+    public String deleteGroupe(@PathVariable Long id) {
+        groupeService.deleteGroupe(id);
+        return "redirect:/admin/groupes";
+    }
+    
     // Gestion des spécialités
     @GetMapping("/specialites")
     public String listSpecialites(Model model) {
@@ -161,6 +257,26 @@ public class AdminController {
         return "redirect:/admin/specialites";
     }
     
+    @GetMapping("/specialites/{id}/edit")
+    public String editSpecialiteForm(@PathVariable Long id, Model model) {
+        specialiteService.getSpecialiteById(id).ifPresent(specialite -> {
+            model.addAttribute("specialite", specialite);
+        });
+        return "admin/specialites/form";
+    }
+    
+    @PostMapping("/specialites/{id}")
+    public String updateSpecialite(@PathVariable Long id, @ModelAttribute Specialite specialite) {
+        specialiteService.updateSpecialite(id, specialite);
+        return "redirect:/admin/specialites";
+    }
+    
+    @PostMapping("/specialites/{id}/delete")
+    public String deleteSpecialite(@PathVariable Long id) {
+        specialiteService.deleteSpecialite(id);
+        return "redirect:/admin/specialites";
+    }
+    
     // Gestion des sessions
     @GetMapping("/sessions")
     public String listSessions(Model model) {
@@ -177,6 +293,26 @@ public class AdminController {
     @PostMapping("/sessions")
     public String createSession(@ModelAttribute Session session) {
         sessionService.createSession(session);
+        return "redirect:/admin/sessions";
+    }
+    
+    @GetMapping("/sessions/{id}/edit")
+    public String editSessionForm(@PathVariable Long id, Model model) {
+        sessionService.getSessionById(id).ifPresent(session -> {
+            model.addAttribute("session", session);
+        });
+        return "admin/sessions/form";
+    }
+    
+    @PostMapping("/sessions/{id}")
+    public String updateSession(@PathVariable Long id, @ModelAttribute Session session) {
+        sessionService.updateSession(id, session);
+        return "redirect:/admin/sessions";
+    }
+    
+    @PostMapping("/sessions/{id}/delete")
+    public String deleteSession(@PathVariable Long id) {
+        sessionService.deleteSession(id);
         return "redirect:/admin/sessions";
     }
 }
