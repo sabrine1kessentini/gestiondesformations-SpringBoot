@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Profil - Administrateur</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link th:href="@{/css/custom.css}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/dashboard">
+                <i class="bi bi-mortarboard-fill"></i> Gestion Formation
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" href="/admin/dashboard"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
+                    <a class="nav-link" href="/admin/etudiants"><i class="bi bi-people-fill"></i> Étudiants</a>
+                    <a class="nav-link" href="/admin/formateurs"><i class="bi bi-person-badge-fill"></i> Formateurs</a>
+                    <a class="nav-link" href="/admin/cours"><i class="bi bi-book-fill"></i> Cours</a>
+                    <a class="nav-link" href="/admin/groupes"><i class="bi bi-collection-fill"></i> Groupes</a>
+                    <a class="nav-link" href="/admin/specialites"><i class="bi bi-tags-fill"></i> Spécialités</a>
+                    <a class="nav-link" href="/admin/sessions"><i class="bi bi-calendar-event-fill"></i> Sessions</a>
+                    <a class="nav-link" href="/admin/seances"><i class="bi bi-clock-history"></i> Séances</a>
+                    <a class="nav-link active" href="/profil"><i class="bi bi-person-circle"></i> Mon Profil</a>
+                    <form th:action="@{/logout}" method="post" style="display:inline;">
+                        <button type="submit" class="nav-link btn btn-link" style="border:none; background:none; color:rgba(255,255,255,.55); padding:0.5rem 1rem;">
+                            <i class="bi bi-box-arrow-right"></i> Déconnexion
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <h1 class="page-title">
+            <i class="bi bi-person-circle"></i> Mon Profil
+        </h1>
+        
+        <div th:if="${success != null}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i> <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div th:if="${error != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Informations personnelles -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-person-badge-fill"></i> Informations personnelles</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/profil/update}" method="post" th:object="${updateProfileDTO}">
+                            <div class="mb-3">
+                                <label for="username" class="form-label"><i class="bi bi-person"></i> Nom d'utilisateur</label>
+                                <input type="text" class="form-control" id="username" th:value="${updateProfileDTO.username}" disabled>
+                                <small class="text-muted">Le nom d'utilisateur ne peut pas être modifié</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="nom" class="form-label"><i class="bi bi-person"></i> Nom *</label>
+                                <input type="text" class="form-control" id="nom" th:field="*{nom}" required>
+                                <div th:if="${#fields.hasErrors('nom')}" class="text-danger" th:errors="*{nom}"></div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="prenom" class="form-label"><i class="bi bi-person"></i> Prénom *</label>
+                                <input type="text" class="form-control" id="prenom" th:field="*{prenom}" required>
+                                <div th:if="${#fields.hasErrors('prenom')}" class="text-danger" th:errors="*{prenom}"></div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label"><i class="bi bi-envelope"></i> Email *</label>
+                                <input type="email" class="form-control" id="email" th:field="*{email}" required>
+                                <div th:if="${#fields.hasErrors('email')}" class="text-danger" th:errors="*{email}"></div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> Enregistrer les modifications
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Changement de mot de passe -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-shield-lock-fill"></i> Changer le mot de passe</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/profil/change-password}" method="post" th:object="${changePasswordDTO}">
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label"><i class="bi bi-key"></i> Mot de passe actuel *</label>
+                                <input type="password" class="form-control" id="currentPassword" th:field="*{currentPassword}" required>
+                                <div th:if="${#fields.hasErrors('currentPassword')}" class="text-danger" th:errors="*{currentPassword}"></div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label"><i class="bi bi-key-fill"></i> Nouveau mot de passe *</label>
+                                <input type="password" class="form-control" id="newPassword" th:field="*{newPassword}" required minlength="6">
+                                <small class="text-muted">Minimum 6 caractères</small>
+                                <div th:if="${#fields.hasErrors('newPassword')}" class="text-danger" th:errors="*{newPassword}"></div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label"><i class="bi bi-key-fill"></i> Confirmer le nouveau mot de passe *</label>
+                                <input type="password" class="form-control" id="confirmPassword" th:field="*{confirmPassword}" required>
+                                <div th:if="${#fields.hasErrors('confirmPassword')}" class="text-danger" th:errors="*{confirmPassword}"></div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-shield-check"></i> Changer le mot de passe
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Validation côté client pour la confirmation du mot de passe
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = this.value;
+            
+            if (newPassword !== confirmPassword) {
+                this.setCustomValidity('Les mots de passe ne correspondent pas');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -23,6 +23,7 @@
                     <a class="nav-link" href="/etudiant/cours"><i class="bi bi-book-fill"></i> Mes Cours</a>
                     <a class="nav-link" href="/etudiant/notes"><i class="bi bi-star-fill"></i> Mes Notes</a>
                     <a class="nav-link" href="/etudiant/emploi-du-temps"><i class="bi bi-calendar-week-fill"></i> Emploi du temps</a>
+                    <a class="nav-link" href="/profil"><i class="bi bi-person-circle"></i> Mon Profil</a>
                     <form th:action="@{/logout}" method="post" style="display:inline;">
                         <button type="submit" class="nav-link btn btn-link" style="border:none; background:none; color:rgba(255,255,255,.55); padding:0.5rem 1rem;">
                             <i class="bi bi-box-arrow-right"></i> Déconnexion
@@ -34,7 +35,7 @@
     </nav>
     
     <div class="container">
-        <h1 class="page-title">
+        <h1 class="page-title" style="color: white; -webkit-text-fill-color: white; background: none;">
             <i class="bi bi-speedometer2"></i> Tableau de bord - Étudiant
         </h1>
         

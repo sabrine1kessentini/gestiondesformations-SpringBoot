@@ -32,6 +32,13 @@ public class FormateurService {
         return formateurRepository.findById(id);
     }
     
+    public Optional<Formateur> getFormateurByUsername(String username) {
+        // Avec l'héritage JOINED, on récupère d'abord l'utilisateur puis on vérifie s'il est un formateur
+        return utilisateurRepository.findByUsername(username)
+                .filter(utilisateur -> utilisateur instanceof Formateur)
+                .map(utilisateur -> (Formateur) utilisateur);
+    }
+    
     public Formateur createFormateur(Formateur formateur) {
         if (utilisateurRepository.existsByEmail(formateur.getEmail())) {
             throw new RuntimeException("Un utilisateur avec cet email existe déjà");

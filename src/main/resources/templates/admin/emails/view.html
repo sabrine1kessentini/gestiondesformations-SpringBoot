@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détail Email - Administration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link th:href="@{/css/custom.css}" rel="stylesheet">
+    <style>
+        .email-body {
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/dashboard">
+                <i class="bi bi-mortarboard-fill"></i> Gestion Formation
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" href="/admin/dashboard"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
+                    <a class="nav-link" href="/admin/emails"><i class="bi bi-envelope-fill"></i> Emails Simulés</a>
+                    <a class="nav-link" href="/profil"><i class="bi bi-person-circle"></i> Mon Profil</a>
+                    <form th:action="@{/logout}" method="post" style="display:inline;">
+                        <button type="submit" class="nav-link btn btn-link" style="border:none; background:none; color:rgba(255,255,255,.55); padding:0.5rem 1rem;">
+                            <i class="bi bi-box-arrow-right"></i> Déconnexion
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="page-title" style="color: white; -webkit-text-fill-color: white; background: none;">
+                <i class="bi bi-envelope-open"></i> Détail de l'Email
+            </h1>
+            <a href="/admin/emails" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Retour à la liste
+            </a>
+        </div>
+
+        <div th:if="${error != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${email != null}" class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-envelope-fill"></i> Email Simulé</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong><i class="bi bi-calendar"></i> Date d'envoi :</strong><br>
+                        <span th:text="${#temporals.format(email.dateEnvoi, 'dd/MM/yyyy à HH:mm')}"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong><i class="bi bi-bookmark"></i> Type :</strong><br>
+                        <span th:switch="${email.typeEmail}" class="badge">
+                            <span th:case="INSCRIPTION_ETUDIANT" class="badge bg-success">Inscription Étudiant</span>
+                            <span th:case="INSCRIPTION_FORMATEUR" class="badge bg-info">Notification Formateur</span>
+                            <span th:case="DESINSCRIPTION_ETUDIANT" class="badge bg-warning">Désinscription Étudiant</span>
+                            <span th:case="DESINSCRIPTION_FORMATEUR" class="badge bg-secondary">Notification Formateur</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong><i class="bi bi-envelope"></i> De :</strong><br>
+                        <code th:text="${email.fromEmail}"></code>
+                    </div>
+                    <div class="col-md-6">
+                        <strong><i class="bi bi-person"></i> À :</strong><br>
+                        <code th:text="${email.toEmail}"></code>
+                    </div>
+                </div>
+
+                <div class="mb-3" th:if="${email.etudiantNom != null or email.coursTitre != null}">
+                    <strong><i class="bi bi-info-circle"></i> Informations contextuelles :</strong><br>
+                    <div class="mt-2">
+                        <span th:if="${email.etudiantNom != null}" class="badge bg-primary me-2">
+                            Étudiant: <span th:text="${email.etudiantNom}"></span>
+                        </span>
+                        <span th:if="${email.coursTitre != null}" class="badge bg-info me-2">
+                            Cours: <span th:text="${email.coursTitre}"></span> (<span th:text="${email.coursCode}"></span>)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <strong><i class="bi bi-tag"></i> Sujet :</strong><br>
+                    <span th:text="${email.subject}"></span>
+                </div>
+
+                <div class="mb-3">
+                    <strong><i class="bi bi-file-text"></i> Contenu :</strong>
+                    <div class="email-body mt-2" th:text="${email.body}"></div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <a href="/admin/emails" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Retour
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${email == null}" class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle-fill"></i> Email non trouvé.
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

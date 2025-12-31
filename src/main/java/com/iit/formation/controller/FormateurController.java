@@ -1,10 +1,13 @@
 package com.iit.formation.controller;
 
 import com.iit.formation.entity.Cours;
+import com.iit.formation.entity.Formateur;
 import com.iit.formation.entity.Note;
 import com.iit.formation.service.CoursService;
+import com.iit.formation.service.FormateurService;
 import com.iit.formation.service.NoteService;
 import com.iit.formation.service.InscriptionService;
+import com.iit.formation.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,12 +30,34 @@ public class FormateurController {
     @Autowired
     private InscriptionService inscriptionService;
     
+    @Autowired
+    private FormateurService formateurService;
+    
+    @Autowired
+    private NotificationService notificationService;
+    
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        // Récupérer l'ID du formateur depuis l'authentification
-        // Pour simplifier, on récupère tous les cours
-        model.addAttribute("cours", coursService.getAllCours());
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated()) {
+                String username = auth.getName();
+                Formateur formateur = formateurService.getFormateurByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("Formateur non trouvé"));
+                
+                // Récupérer les cours du formateur
+                List<Cours> cours = coursService.getCoursByFormateur(formateur.getId());
+                model.addAttribute("cours", cours);
+                
+                // Récupérer les notifications
+                List<com.iit.formation.entity.Notification> notifications = 
+                        notificationService.getNotificationsNonLues(formateur.getId());
+                model.addAttribute("notifications", notifications);
+                model.addAttribute("nombreNotifications", notificationService.countNotificationsNonLues(formateur.getId()));
+            }
+        } catch (Exception e) {
+            model.addAttribute("error", "Erreur lors du chargement du tableau de bord: " + e.getMessage());
+        }
         return "formateur/dashboard";
     }
     
@@ -79,6 +104,52 @@ public class FormateurController {
                                 @RequestParam(required = false) String commentaire) {
         noteService.attribuerNote(etudiantId, coursId, valeur, commentaire);
         return "redirect:/formateur/cours/" + coursId + "/notes";
+    }
+    
+    @GetMapping("/notifications")
+    public String notifications(Model model) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated()) {
+                String username = auth.getName();
+                Formateur formateur = formateurService.getFormateurByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("Formateur non trouvé"));
+                
+                List<com.iit.formation.entity.Notification> toutesNotifications = 
+                        notificationService.getNotificationsByFormateur(formateur.getId());
+                model.addAttribute("notifications", toutesNotifications);
+                model.addAttribute("nombreNotifications", notificationService.countNotificationsNonLues(formateur.getId()));
+            }
+        } catch (Exception e) {
+            model.addAttribute("error", "Erreur lors du chargement des notifications: " + e.getMessage());
+        }
+        return "formateur/notifications";
+    }
+    
+    @PostMapping("/notifications/{id}/marquer-lue")
+    public String marquerCommeLue(@PathVariable Long id) {
+        try {
+            notificationService.marquerCommeLue(id);
+        } catch (Exception e) {
+            // Erreur silencieuse
+        }
+        return "redirect:/formateur/notifications";
+    }
+    
+    @PostMapping("/notifications/marquer-toutes-lues")
+    public String marquerToutesCommeLues() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated()) {
+                String username = auth.getName();
+                Formateur formateur = formateurService.getFormateurByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("Formateur non trouvé"));
+                notificationService.marquerToutesCommeLues(formateur.getId());
+            }
+        } catch (Exception e) {
+            // Erreur silencieuse
+        }
+        return "redirect:/formateur/notifications";
     }
 }
 

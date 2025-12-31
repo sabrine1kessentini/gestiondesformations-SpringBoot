@@ -5,10 +5,12 @@ import com.iit.formation.entity.Inscription;
 import com.iit.formation.entity.Note;
 import com.iit.formation.entity.Seance;
 import com.iit.formation.service.CoursService;
+import com.iit.formation.service.EmailService;
 import com.iit.formation.service.EtudiantService;
 import com.iit.formation.service.InscriptionService;
 import com.iit.formation.service.NoteService;
 import com.iit.formation.service.SeanceService;
+import com.iit.formation.service.UtilisateurService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -37,19 +39,25 @@ public class EtudiantController {
     @Autowired
     private CoursService coursService;
     
+    @Autowired
+    private UtilisateurService utilisateurService;
+    
+    @Autowired
+    private EmailService emailService;
+    
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            // TODO: Récupérer l'étudiant connecté
-            // Pour l'instant, on prend le premier étudiant
-            List<Etudiant> etudiants = etudiantService.getAllEtudiants();
-            if (!etudiants.isEmpty()) {
-                Etudiant etudiant = etudiants.get(0);
+            if (auth != null && auth.isAuthenticated()) {
+                String username = auth.getName();
+                // Récupérer l'étudiant connecté par son username
+                Etudiant etudiant = etudiantService.getEtudiantByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("Étudiant non trouvé"));
                 model.addAttribute("etudiant", etudiant);
                 model.addAttribute("moyenne", etudiantService.getMoyenneGenerale(etudiant.getId()));
             } else {
-                model.addAttribute("error", "Aucun étudiant trouvé");
+                model.addAttribute("error", "Vous devez être connecté");
             }
         } catch (Exception e) {
             model.addAttribute("error", "Erreur lors du chargement du tableau de bord: " + e.getMessage());
@@ -60,10 +68,12 @@ public class EtudiantController {
     @GetMapping("/cours")
     public String mesCours(Model model) {
         try {
-            // TODO: Filtrer par étudiant connecté
-            List<Etudiant> etudiants = etudiantService.getAllEtudiants();
-            if (!etudiants.isEmpty()) {
-                Long etudiantId = etudiants.get(0).getId();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated()) {
+                String username = auth.getName();
+                Etudiant etudiant = etudiantService.getEtudiantByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("Étudiant non trouvé"));
+                Long etudiantId = etudiant.getId();
                 List<Inscription> toutesInscriptions = inscriptionService.getInscriptionsByEtudiant(etudiantId);
                 // Filtrer pour ne montrer que les inscriptions actives
                 List<Inscription> inscriptionsActives = toutesInscriptions.stream()
@@ -79,12 +89,18 @@ public class EtudiantController {
     
     @GetMapping("/notes")
     public String mesNotes(Model model) {
-        // TODO: Filtrer par étudiant connecté
-        List<Etudiant> etudiants = etudiantService.getAllEtudiants();
-        if (!etudiants.isEmpty()) {
-            Long etudiantId = etudiants.get(0).getId();
-            model.addAttribute("notes", noteService.getNotesByEtudiant(etudiantId));
-            model.addAttribute("moyenne", etudiantService.getMoyenneGenerale(etudiantId));
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated()) {
+                String username = auth.getName();
+                Etudiant etudiant = etudiantService.getEtudiantByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("Étudiant non trouvé"));
+                Long etudiantId = etudiant.getId();
+                model.addAttribute("notes", noteService.getNotesByEtudiant(etudiantId));
+                model.addAttribute("moyenne", etudiantService.getMoyenneGenerale(etudiantId));
+            }
+        } catch (Exception e) {
+            model.addAttribute("error", "Erreur lors du chargement des notes: " + e.getMessage());
         }
         return "etudiant/notes/list";
     }
@@ -92,15 +108,17 @@ public class EtudiantController {
     @GetMapping("/emploi-du-temps")
     public String emploiDuTemps(Model model) {
         try {
-            // TODO: Filtrer par étudiant connecté
-            List<Etudiant> etudiants = etudiantService.getAllEtudiants();
-            if (!etudiants.isEmpty()) {
-                Long etudiantId = etudiants.get(0).getId();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated()) {
+                String username = auth.getName();
+                Etudiant etudiant = etudiantService.getEtudiantByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("Étudiant non trouvé"));
+                Long etudiantId = etudiant.getId();
                 List<Seance> seances = seanceService.getEmploiDuTempsEtudiant(etudiantId);
                 model.addAttribute("seances", seances != null ? seances : new java.util.ArrayList<>());
             } else {
                 model.addAttribute("seances", new java.util.ArrayList<>());
-                model.addAttribute("error", "Aucun étudiant trouvé");
+                model.addAttribute("error", "Vous devez être connecté");
             }
         } catch (Exception e) {
             model.addAttribute("seances", new java.util.ArrayList<>());
@@ -112,10 +130,12 @@ public class EtudiantController {
     @GetMapping("/cours/disponibles")
     public String coursDisponibles(Model model) {
         try {
-            // TODO: Récupérer l'étudiant connecté
-            List<Etudiant> etudiants = etudiantService.getAllEtudiants();
-            if (!etudiants.isEmpty()) {
-                Long etudiantId = etudiants.get(0).getId();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated()) {
+                String username = auth.getName();
+                Etudiant etudiant = etudiantService.getEtudiantByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("Étudiant non trouvé"));
+                Long etudiantId = etudiant.getId();
                 List<com.iit.formation.entity.Cours> tousLesCours = coursService.getAllCours();
                 List<Inscription> inscriptions = inscriptionService.getInscriptionsByEtudiant(etudiantId);
                 // Filtrer pour ne prendre que les inscriptions actives
@@ -134,16 +154,28 @@ public class EtudiantController {
     }
     
     @PostMapping("/inscrire/{coursId}")
-    public String inscrireAuCours(@PathVariable Long coursId) {
+    public String inscrireAuCours(@PathVariable Long coursId, 
+                                   org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         try {
-            // TODO: Récupérer l'étudiant connecté
-            List<Etudiant> etudiants = etudiantService.getAllEtudiants();
-            if (!etudiants.isEmpty()) {
-                Long etudiantId = etudiants.get(0).getId();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated()) {
+                String username = auth.getName();
+                Etudiant etudiant = etudiantService.getEtudiantByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("Étudiant non trouvé"));
+                Long etudiantId = etudiant.getId();
                 inscriptionService.inscrireEtudiant(etudiantId, coursId);
+                
+                // Vérifier le mode d'envoi d'email pour adapter le message
+                if (emailService.estModeSimulation()) {
+                    redirectAttributes.addFlashAttribute("success", 
+                        "Inscription réussie ! L'email de confirmation a été simulé. Consultez la console de l'application pour voir le contenu de l'email.");
+                } else {
+                    redirectAttributes.addFlashAttribute("success", 
+                        "Inscription réussie ! Un email de confirmation vous a été envoyé à " + etudiant.getEmail() + ".");
+                }
             }
         } catch (RuntimeException e) {
-            // L'erreur sera gérée par la redirection
+            redirectAttributes.addFlashAttribute("error", "Erreur lors de l'inscription: " + e.getMessage());
         }
         return "redirect:/etudiant/cours/disponibles";
     }
@@ -151,10 +183,12 @@ public class EtudiantController {
     @PostMapping("/desinscrire/{coursId}")
     public String desinscrireDuCours(@PathVariable Long coursId) {
         try {
-            // TODO: Récupérer l'étudiant connecté
-            List<Etudiant> etudiants = etudiantService.getAllEtudiants();
-            if (!etudiants.isEmpty()) {
-                Long etudiantId = etudiants.get(0).getId();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated()) {
+                String username = auth.getName();
+                Etudiant etudiant = etudiantService.getEtudiantByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("Étudiant non trouvé"));
+                Long etudiantId = etudiant.getId();
                 inscriptionService.annulerInscription(etudiantId, coursId);
             }
         } catch (RuntimeException e) {

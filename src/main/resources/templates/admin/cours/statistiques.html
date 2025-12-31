@@ -11,19 +11,36 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/admin/dashboard">Gestion Formation</a>
+            <a class="navbar-brand" href="/admin/dashboard">
+                <i class="bi bi-mortarboard-fill"></i> Gestion Formation
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/admin/cours">Retour aux cours</a>
+                    <a class="nav-link" href="/admin/dashboard"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
+                    <a class="nav-link" href="/admin/etudiants"><i class="bi bi-people-fill"></i> Étudiants</a>
+                    <a class="nav-link" href="/admin/formateurs"><i class="bi bi-person-badge-fill"></i> Formateurs</a>
+                    <a class="nav-link active" href="/admin/cours"><i class="bi bi-book-fill"></i> Cours</a>
+                    <a class="nav-link" href="/admin/groupes"><i class="bi bi-collection-fill"></i> Groupes</a>
+                    <a class="nav-link" href="/admin/specialites"><i class="bi bi-tags-fill"></i> Spécialités</a>
+                    <a class="nav-link" href="/admin/sessions"><i class="bi bi-calendar-event-fill"></i> Sessions</a>
+                    <a class="nav-link" href="/admin/seances"><i class="bi bi-clock-history"></i> Séances</a>
+                    <a class="nav-link" href="/profil"><i class="bi bi-person-circle"></i> Mon Profil</a>
                 <form th:action="@{/logout}" method="post" style="display:inline;">
-                    <button type="submit" class="nav-link btn btn-link" style="border:none; background:none; color:rgba(255,255,255,.55); padding:0.5rem 1rem;">Déconnexion</button>
+                        <button type="submit" class="nav-link btn btn-link" style="border:none; background:none; color:rgba(255,255,255,.55); padding:0.5rem 1rem;">
+                            <i class="bi bi-box-arrow-right"></i> Déconnexion
+                        </button>
                 </form>
+                </div>
             </div>
         </div>
     </nav>
     
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="page-title">
+            <h1 class="page-title" style="color: white; -webkit-text-fill-color: white; background: none;">
                 <i class="bi bi-graph-up-arrow"></i> Statistiques du Cours
             </h1>
             <a th:href="@{/admin/cours/{id}/rapport-pdf(id=${cours.id})}" class="btn btn-primary btn-lg" target="_blank">
@@ -31,7 +48,10 @@
             </a>
         </div>
         
-        <div th:if="${error != null}" class="alert alert-danger" th:text="${error}"></div>
+        <div th:if="${error != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
         
         <div th:if="${cours != null}">
             <div class="card mb-4">
@@ -101,7 +121,10 @@
                                 <td th:text="${note.dateAttribution != null ? #temporals.format(note.dateAttribution, 'dd/MM/yyyy HH:mm') : '-'}"></td>
                             </tr>
                             <tr th:if="${notes == null || notes.isEmpty()}">
-                                <td colspan="5" class="text-center">Aucune note attribuée pour ce cours.</td>
+                                <td colspan="5" class="text-center py-5">
+                                    <i class="bi bi-inbox" style="font-size: 2rem; color: #ccc;"></i>
+                                    <p class="text-muted mt-3">Aucune note attribuée pour ce cours.</p>
+                                </td>
                             </tr>
                         </tbody>
                     </table>

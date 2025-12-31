@@ -3,53 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Spécialités</title>
+    <title>Gestion des Spécialités - Administration</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link th:href="@{/css/custom.css}" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/admin/dashboard">Gestion Formation</a>
+            <a class="navbar-brand" href="/admin/dashboard">
+                <i class="bi bi-mortarboard-fill"></i> Gestion Formation
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/admin/dashboard">Tableau de bord</a>
+                    <a class="nav-link" href="/admin/dashboard"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
+                    <a class="nav-link" href="/admin/etudiants"><i class="bi bi-people-fill"></i> Étudiants</a>
+                    <a class="nav-link" href="/admin/formateurs"><i class="bi bi-person-badge-fill"></i> Formateurs</a>
+                    <a class="nav-link" href="/admin/cours"><i class="bi bi-book-fill"></i> Cours</a>
+                    <a class="nav-link" href="/admin/groupes"><i class="bi bi-collection-fill"></i> Groupes</a>
+                    <a class="nav-link active" href="/admin/specialites"><i class="bi bi-tags-fill"></i> Spécialités</a>
+                    <a class="nav-link" href="/admin/sessions"><i class="bi bi-calendar-event-fill"></i> Sessions</a>
+                    <a class="nav-link" href="/admin/seances"><i class="bi bi-clock-history"></i> Séances</a>
+                    <a class="nav-link" href="/profil"><i class="bi bi-person-circle"></i> Mon Profil</a>
                 <form th:action="@{/logout}" method="post" style="display:inline;">
-                    <button type="submit" class="nav-link btn btn-link" style="border:none; background:none; color:rgba(255,255,255,.55); padding:0.5rem 1rem;">Déconnexion</button>
+                        <button type="submit" class="nav-link btn btn-link" style="border:none; background:none; color:rgba(255,255,255,.55); padding:0.5rem 1rem;">
+                            <i class="bi bi-box-arrow-right"></i> Déconnexion
+                        </button>
                 </form>
+                </div>
             </div>
         </div>
     </nav>
     
     <div class="container mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Gestion des Spécialités</h1>
-            <a href="/admin/specialites/new" class="btn btn-primary">Nouvelle spécialité</a>
+            <h1 class="page-title" style="color: white; -webkit-text-fill-color: white; background: none;">
+                <i class="bi bi-tags-fill"></i> Gestion des Spécialités
+            </h1>
+            <a href="/admin/specialites/new" class="btn btn-primary">
+                <i class="bi bi-plus-circle-fill"></i> Nouvelle spécialité
+            </a>
         </div>
         
-        <table class="table table-striped">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-list-ul"></i> Liste des spécialités</h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${specialites == null or specialites.isEmpty()}" class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+                    <p class="text-muted mt-3" style="font-size: 1.2rem;">Aucune spécialité enregistrée pour le moment</p>
+                    <a href="/admin/specialites/new" class="btn btn-primary mt-3">
+                        <i class="bi bi-plus-circle-fill"></i> Ajouter une spécialité
+                    </a>
+                </div>
+                
+                <div th:if="${specialites != null and !specialites.isEmpty()}">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Nom</th>
-                    <th>Description</th>
-                    <th>Actions</th>
+                                    <th><i class="bi bi-tag"></i> Nom</th>
+                                    <th><i class="bi bi-file-text"></i> Description</th>
+                                    <th><i class="bi bi-gear"></i> Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <tr th:each="specialite : ${specialites}">
-                    <td th:text="${specialite.nom}"></td>
-                    <td th:text="${specialite.description}"></td>
-                    <td>
-                        <a th:href="@{/admin/specialites/{id}/edit(id=${specialite.id})}" class="btn btn-sm btn-warning">Modifier</a>
+                                    <td><strong th:text="${specialite.nom}"></strong></td>
+                                    <td>
+                                        <span th:if="${specialite.description != null and !specialite.description.isEmpty()}" th:text="${specialite.description}"></span>
+                                        <span th:if="${specialite.description == null or specialite.description.isEmpty()}" class="text-muted">-</span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a th:href="@{/admin/specialites/{id}/edit(id=${specialite.id})}" class="btn btn-sm btn-warning" title="Modifier">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
                         <form th:action="@{/admin/specialites/{id}/delete(id=${specialite.id})}" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr?')">Supprimer</button>
+                                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette spécialité?')" title="Supprimer">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
                         </form>
+                                        </div>
                     </td>
                 </tr>
             </tbody>
         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-
-

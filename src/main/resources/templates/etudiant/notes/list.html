@@ -5,57 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mes Notes - Étudiant</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link th:href="@{/css/custom.css}" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/etudiant/dashboard">Gestion Formation</a>
+            <a class="navbar-brand" href="/etudiant/dashboard">
+                <i class="bi bi-mortarboard-fill"></i> Gestion Formation
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/etudiant/dashboard">Tableau de bord</a>
-                <a class="nav-link" href="/etudiant/cours">Mes Cours</a>
-                <a class="nav-link" href="/etudiant/emploi-du-temps">Emploi du temps</a>
+                    <a class="nav-link" href="/etudiant/dashboard"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
+                    <a class="nav-link" href="/etudiant/cours/disponibles"><i class="bi bi-book-plus-fill"></i> Cours Disponibles</a>
+                    <a class="nav-link" href="/etudiant/cours"><i class="bi bi-book-fill"></i> Mes Cours</a>
+                    <a class="nav-link active" href="/etudiant/notes"><i class="bi bi-star-fill"></i> Mes Notes</a>
+                    <a class="nav-link" href="/etudiant/emploi-du-temps"><i class="bi bi-calendar-week-fill"></i> Emploi du temps</a>
+                    <a class="nav-link" href="/profil"><i class="bi bi-person-circle"></i> Mon Profil</a>
                 <form th:action="@{/logout}" method="post" style="display:inline;">
-                    <button type="submit" class="nav-link btn btn-link" style="border:none; background:none; color:rgba(255,255,255,.55); padding:0.5rem 1rem;">Déconnexion</button>
+                        <button type="submit" class="nav-link btn btn-link" style="border:none; background:none; color:rgba(255,255,255,.55); padding:0.5rem 1rem;">
+                            <i class="bi bi-box-arrow-right"></i> Déconnexion
+                        </button>
                 </form>
+                </div>
             </div>
         </div>
     </nav>
     
     <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Mes Notes</h1>
-            <div class="card text-white bg-primary" style="width: 200px;">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Moyenne</h5>
-                    <p class="card-text" style="font-size: 1.5rem;" th:text="${moyenne}">0.0</p>
+        <div class="row g-4 mb-4">
+            <div class="col-md-8">
+                <h1 class="page-title" style="color: white; -webkit-text-fill-color: white; background: none;">
+                    <i class="bi bi-star-fill"></i> Mes Notes
+                </h1>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card bg-gradient-primary">
+                    <h5><i class="bi bi-star-fill"></i> Moyenne générale</h5>
+                    <p class="stat-value" th:text="${moyenne != null ? #numbers.formatDecimal(moyenne, 1, 2) : '0.0'}">0.0</p>
                 </div>
             </div>
         </div>
         
-        <table class="table table-striped">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-list-ul"></i> Détail de mes notes</h5>
+            </div>
+            <div class="card-body">
+                <div th:if="${notes == null or notes.isEmpty()}" class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+                    <p class="text-muted mt-3" style="font-size: 1.2rem;">Aucune note disponible pour le moment</p>
+                </div>
+                
+                <div th:if="${notes != null and !notes.isEmpty()}">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Cours</th>
-                    <th>Note</th>
-                    <th>Commentaire</th>
-                    <th>Date</th>
+                                    <th><i class="bi bi-book"></i> Cours</th>
+                                    <th><i class="bi bi-star"></i> Note</th>
+                                    <th><i class="bi bi-chat-left-text"></i> Commentaire</th>
+                                    <th><i class="bi bi-calendar-event"></i> Date</th>
                 </tr>
             </thead>
             <tbody>
-                <tr th:if="${notes == null or notes.isEmpty()}">
-                    <td colspan="4" class="text-center">Aucune note disponible</td>
-                </tr>
                 <tr th:each="note : ${notes}">
-                    <td th:text="${note.cours.titre}"></td>
-                    <td th:text="${note.valeur}"></td>
-                    <td th:text="${note.commentaire}"></td>
-                    <td th:text="${note.dateAttribution}"></td>
+                                    <td>
+                                        <strong th:text="${note.cours.titre}"></strong>
+                                        <br>
+                                        <small class="text-muted" th:text="'Code: ' + ${note.cours.code}"></small>
+                                    </td>
+                                    <td>
+                                        <span th:if="${note.valeur >= 10}" class="badge bg-success" style="font-size: 1.1rem; padding: 0.5rem 1rem;" th:text="${#numbers.formatDecimal(note.valeur, 1, 2)}"></span>
+                                        <span th:if="${note.valeur < 10}" class="badge bg-danger" style="font-size: 1.1rem; padding: 0.5rem 1rem;" th:text="${#numbers.formatDecimal(note.valeur, 1, 2)}"></span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${note.commentaire != null and !note.commentaire.isEmpty()}" th:text="${note.commentaire}"></span>
+                                        <span th:if="${note.commentaire == null or note.commentaire.isEmpty()}" class="text-muted">-</span>
+                                    </td>
+                                    <td th:text="${#temporals.format(note.dateAttribution, 'dd/MM/yyyy')}"></td>
                 </tr>
             </tbody>
         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

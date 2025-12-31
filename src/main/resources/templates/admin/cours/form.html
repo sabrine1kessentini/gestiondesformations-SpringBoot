@@ -5,85 +5,162 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${cours.id != null ? 'Modifier' : 'Nouveau'} + ' Cours'">Formulaire Cours</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link th:href="@{/css/custom.css}" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/admin/dashboard">Gestion Formation</a>
-            <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="/admin/cours">Retour</a>
+            <a class="navbar-brand" href="/admin/dashboard">
+                <i class="bi bi-mortarboard-fill"></i> Gestion Formation
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" href="/admin/dashboard"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
+                    <a class="nav-link" href="/admin/cours"><i class="bi bi-book-fill"></i> Cours</a>
+                    <a class="nav-link" href="/profil"><i class="bi bi-person-circle"></i> Mon Profil</a>
+                    <form th:action="@{/logout}" method="post" style="display:inline;">
+                        <button type="submit" class="nav-link btn btn-link" style="border:none; background:none; color:rgba(255,255,255,.55); padding:0.5rem 1rem;">
+                            <i class="bi bi-box-arrow-right"></i> Déconnexion
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </nav>
     
     <div class="container mt-4">
-        <h1 th:text="${cours.id != null ? 'Modifier' : 'Nouveau'} + ' Cours'">Formulaire</h1>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="page-title" style="color: white; -webkit-text-fill-color: white; background: none;">
+                <i class="bi bi-book-plus-fill" th:if="${cours.id == null}"></i>
+                <i class="bi bi-book-half" th:if="${cours.id != null}"></i>
+                <span th:text="${cours.id != null ? 'Modifier' : 'Nouveau'} + ' Cours'"></span>
+            </h1>
+            <a href="/admin/cours" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Retour à la liste
+            </a>
+        </div>
         
-        <div th:if="${error != null}" class="alert alert-danger" th:text="${error}"></div>
+        <div th:if="${error != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
         
-        <form th:action="${cours.id != null ? '/admin/cours/' + cours.id : '/admin/cours'}" 
-              th:object="${cours}" method="post">
-            <div class="mb-3">
-                <label for="code" class="form-label">Code</label>
-                <input type="text" class="form-control" id="code" th:field="*{code}" required>
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle-fill"></i> Informations du cours
+                </h5>
             </div>
-            <div class="mb-3">
-                <label for="titre" class="form-label">Titre</label>
-                <input type="text" class="form-control" id="titre" th:field="*{titre}" required>
-            </div>
-            <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
-                <textarea class="form-control" id="description" th:field="*{description}" rows="3"></textarea>
-            </div>
-            <div class="mb-3">
-                <label for="formateur" class="form-label">Formateur</label>
-                <select class="form-control" id="formateur" name="formateur.id" required>
-                    <option value="">Sélectionner un formateur</option>
-                    <option th:each="formateur : ${formateurs}" 
-                            th:value="${formateur.id}" 
-                            th:selected="${cours.formateur != null && cours.formateur.id == formateur.id}"
-                            th:text="${formateur.prenom + ' ' + formateur.nom}"></option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="specialite" class="form-label">Spécialité</label>
-                <select class="form-control" id="specialite" name="specialite.id">
-                    <option value="">Aucune</option>
-                    <option th:each="specialite : ${specialites}" 
-                            th:value="${specialite.id}" 
-                            th:selected="${cours.specialite != null && cours.specialite.id == specialite.id}"
-                            th:text="${specialite.nom}"></option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="session" class="form-label">Session</label>
-                <select class="form-control" id="session" name="session.id">
-                    <option value="">Aucune</option>
-                    <option th:each="sess : ${sessions}" 
-                            th:value="${sess.id}" 
-                            th:selected="${cours.session != null && cours.session.id == sess.id}"
-                            th:text="${sess.nom}"></option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Groupes</label>
-                <div th:each="groupe : ${groupes}">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" 
-                               th:id="${'groupe_' + groupe.id}"
-                               th:value="${groupe.id}"
-                               name="groupeIds"
-                               th:checked="${cours.groupes != null && cours.groupes.?[id == groupe.id].size() > 0}">
-                        <label class="form-check-label" th:for="${'groupe_' + groupe.id}" th:text="${groupe.nom}"></label>
+            <div class="card-body">
+                <form th:action="${cours.id != null ? '/admin/cours/' + cours.id : '/admin/cours'}" 
+                      th:object="${cours}" method="post">
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="code" class="form-label">
+                                <i class="bi bi-hash"></i> Code <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="code" th:field="*{code}" required>
+                            <small class="form-text text-muted">Code unique du cours</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="titre" class="form-label">
+                                <i class="bi bi-book"></i> Titre <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="titre" th:field="*{titre}" required>
+                        </div>
                     </div>
-                </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            <i class="bi bi-file-text"></i> Description
+                        </label>
+                        <textarea class="form-control" id="description" th:field="*{description}" rows="4"></textarea>
+                        <small class="form-text text-muted">Description détaillée du cours</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="formateur" class="form-label">
+                                <i class="bi bi-person-badge"></i> Formateur <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="formateur" name="formateur.id" required>
+                                <option value="">Sélectionner un formateur</option>
+                                <option th:each="formateur : ${formateurs}" 
+                                        th:value="${formateur.id}" 
+                                        th:selected="${cours.formateur != null && cours.formateur.id == formateur.id}"
+                                        th:text="${formateur.prenom + ' ' + formateur.nom}"></option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="specialite" class="form-label">
+                                <i class="bi bi-tags"></i> Spécialité
+                            </label>
+                            <select class="form-select" id="specialite" name="specialite.id">
+                                <option value="">Aucune</option>
+                                <option th:each="specialite : ${specialites}" 
+                                        th:value="${specialite.id}" 
+                                        th:selected="${cours.specialite != null && cours.specialite.id == specialite.id}"
+                                        th:text="${specialite.nom}"></option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="session" class="form-label">
+                                <i class="bi bi-calendar-event"></i> Session
+                            </label>
+                            <select class="form-select" id="session" name="session.id">
+                                <option value="">Aucune</option>
+                                <option th:each="sess : ${sessions}" 
+                                        th:value="${sess.id}" 
+                                        th:selected="${cours.session != null && cours.session.id == sess.id}"
+                                        th:text="${sess.nom}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-people"></i> Groupes
+                        </label>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4" th:each="groupe : ${groupes}">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   th:id="${'groupe_' + groupe.id}"
+                                                   th:value="${groupe.id}"
+                                                   name="groupeIds"
+                                                   th:checked="${cours.groupes != null && cours.groupes.?[id == groupe.id].size() > 0}">
+                                            <label class="form-check-label" th:for="${'groupe_' + groupe.id}" th:text="${groupe.nom}"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">Sélectionnez les groupes qui suivront ce cours</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="/admin/cours" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Enregistrer
+                        </button>
+                    </div>
+                </form>
             </div>
-            <button type="submit" class="btn btn-primary">Enregistrer</button>
-            <a href="/admin/cours" class="btn btn-secondary">Annuler</a>
-        </form>
+        </div>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-

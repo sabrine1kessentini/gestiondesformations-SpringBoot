@@ -41,6 +41,13 @@ public class EtudiantService {
         return etudiantRepository.findByMatricule(matricule);
     }
     
+    public Optional<Etudiant> getEtudiantByUsername(String username) {
+        // Avec l'héritage JOINED, on récupère d'abord l'utilisateur puis on vérifie s'il est un étudiant
+        return utilisateurRepository.findByUsername(username)
+                .filter(utilisateur -> utilisateur instanceof Etudiant)
+                .map(utilisateur -> (Etudiant) utilisateur);
+    }
+    
     public Etudiant createEtudiant(Etudiant etudiant) {
         if (etudiantRepository.existsByMatricule(etudiant.getMatricule())) {
             throw new RuntimeException("Un étudiant avec ce matricule existe déjà");

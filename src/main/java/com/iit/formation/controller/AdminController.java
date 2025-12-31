@@ -45,6 +45,9 @@ public class AdminController {
     @Autowired
     private NoteService noteService;
     
+    @Autowired
+    private com.iit.formation.service.MockMailService mockMailService;
+    
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         model.addAttribute("dashboard", reportingService.getTableauDeBord());
@@ -477,6 +480,41 @@ public class AdminController {
                 (e.getCause() != null ? " - Cause: " + e.getCause().getMessage() : ""), 
                 org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+    
+    // Gestion des emails simulés (Mock)
+    @GetMapping("/emails")
+    public String listEmailsSimules(Model model) {
+        try {
+            model.addAttribute("emails", mockMailService.getAllEmails());
+        } catch (Exception e) {
+            model.addAttribute("emails", new ArrayList<>());
+            model.addAttribute("error", "Erreur lors du chargement des emails: " + e.getMessage());
+        }
+        return "admin/emails/list";
+    }
+    
+    @GetMapping("/emails/{id}")
+    public String viewEmail(@PathVariable Long id, Model model) {
+        try {
+            mockMailService.getAllEmails().stream()
+                .filter(email -> email.getId().equals(id))
+                .findFirst()
+                .ifPresent(email -> {
+                    model.addAttribute("email", email);
+                    // Marquer comme lu
+                    mockMailService.marquerCommeLu(id);
+                });
+        } catch (Exception e) {
+            model.addAttribute("error", "Erreur lors du chargement de l'email: " + e.getMessage());
+        }
+        return "admin/emails/view";
+    }
+    
+    @PostMapping("/emails/{id}/marquer-lu")
+    public String marquerEmailLu(@PathVariable Long id) {
+        mockMailService.marquerCommeLu(id);
+        return "redirect:/admin/emails";
     }
 }
 
