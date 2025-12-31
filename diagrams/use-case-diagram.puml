@@ -1,0 +1,96 @@
+@startuml
+!theme plain
+skinparam actorStyle awesome
+skinparam useCaseStyle rectangle
+
+title Diagramme de Cas d'Utilisation - Système de Gestion de Formation
+
+actor "Administrateur" as Admin
+actor "Formateur" as Formateur
+actor "Étudiant" as Etudiant
+
+package "Gestion des Utilisateurs" {
+    usecase "Gérer les étudiants" as UC1
+    usecase "Gérer les formateurs" as UC2
+    usecase "Gérer les groupes" as UC3
+    usecase "Gérer les spécialités" as UC4
+    usecase "Gérer les sessions" as UC5
+}
+
+package "Gestion des Cours" {
+    usecase "Gérer les cours" as UC6
+    usecase "Gérer les séances" as UC7
+    usecase "Consulter les statistiques" as UC8
+    usecase "Générer des rapports PDF" as UC9
+}
+
+package "Gestion des Notes" {
+    usecase "Attribuer des notes" as UC10
+    usecase "Modifier des notes" as UC11
+    usecase "Consulter les notes" as UC12
+}
+
+package "Gestion des Inscriptions" {
+    usecase "S'inscrire à un cours" as UC13
+    usecase "Se désinscrire d'un cours" as UC14
+    usecase "Consulter les cours disponibles" as UC15
+    usecase "Consulter mes cours" as UC16
+}
+
+package "Notifications" {
+    usecase "Consulter les notifications" as UC17
+    usecase "Marquer notification comme lue" as UC18
+    usecase "Recevoir email d'inscription" as UC19
+}
+
+package "Profil" {
+    usecase "Consulter le profil" as UC20
+    usecase "Modifier le profil" as UC21
+    usecase "Changer le mot de passe" as UC22
+}
+
+package "Emploi du Temps" {
+    usecase "Consulter l'emploi du temps" as UC23
+}
+
+' Relations Administrateur
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+Admin --> UC5
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+Admin --> UC9
+Admin --> UC12
+Admin --> UC16
+Admin --> UC20
+Admin --> UC21
+Admin --> UC22
+
+' Relations Formateur
+Formateur --> UC10
+Formateur --> UC11
+Formateur --> UC12
+Formateur --> UC16
+Formateur --> UC17
+Formateur --> UC18
+Formateur --> UC20
+Formateur --> UC21
+Formateur --> UC22
+
+' Relations Étudiant
+Etudiant --> UC13
+Etudiant --> UC14
+Etudiant --> UC15
+Etudiant --> UC16
+Etudiant --> UC12
+Etudiant --> UC19
+Etudiant --> UC20
+Etudiant --> UC21
+Etudiant --> UC22
+Etudiant --> UC23
+
+@enduml
+

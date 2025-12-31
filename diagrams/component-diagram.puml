@@ -1,0 +1,106 @@
+@startuml
+!theme plain
+skinparam linetype ortho
+skinparam componentStyle rectangle
+
+title Diagramme de Composants - Architecture SSR/CSR
+
+package "Couche Présentation" {
+    component [Thymeleaf Templates] as Thymeleaf
+    component [Bootstrap CSS/JS] as Bootstrap
+    component [REST Client\n(SPA)] as SPA
+}
+
+package "Couche Contrôleurs" {
+    component [Web Controllers] as WebCtrl {
+        component [AdminController]
+        component [EtudiantController]
+        component [FormateurController]
+        component [ProfilController]
+    }
+    
+    component [REST Controllers] as RestCtrl {
+        component [EtudiantRestController]
+        component [CoursRestController]
+        component [InscriptionRestController]
+        component [NoteRestController]
+        component [NotificationRestController]
+    }
+}
+
+package "Couche Services" {
+    component [Business Services] as Services {
+        component [InscriptionService]
+        component [EmailService]
+        component [MockMailService]
+        component [NotificationService]
+        component [NoteService]
+        component [CoursService]
+    }
+    
+    component [Security Service] as Security
+}
+
+package "Couche Données" {
+    component [Repositories] as Repos {
+        component [InscriptionRepository]
+        component [EtudiantRepository]
+        component [CoursRepository]
+        component [NotificationRepository]
+    }
+    
+    component [Entities] as Entities {
+        component [Etudiant]
+        component [Cours]
+        component [Inscription]
+        component [Notification]
+    }
+}
+
+package "Infrastructure" {
+    database "H2 / MySQL" as DB
+    component [JavaMailSender] as Mail
+    component [MockMailService] as MockMail
+}
+
+' Relations Présentation -> Contrôleurs
+Thymeleaf --> WebCtrl : utilise
+SPA --> RestCtrl : consomme
+Bootstrap --> Thymeleaf : style
+
+' Relations Contrôleurs -> Services
+WebCtrl --> Services : appelle
+RestCtrl --> Services : appelle
+WebCtrl --> Security : authentifie
+RestCtrl --> Security : authentifie
+
+' Relations Services -> Données
+Services --> Repos : utilise
+Repos --> Entities : manipule
+Services --> Mail : envoie emails
+Services --> MockMail : simule emails
+
+' Relations Données -> Infrastructure
+Repos --> DB : persiste
+Entities --> DB : mappe
+
+note right of WebCtrl
+    **SSR Mode**
+    Rendu côté serveur
+    avec Thymeleaf
+end note
+
+note right of RestCtrl
+    **CSR Mode**
+    API REST pour
+    applications SPA
+end note
+
+note right of Services
+    **Business Logic**
+    Logique métier
+    centralisée
+end note
+
+@enduml
+

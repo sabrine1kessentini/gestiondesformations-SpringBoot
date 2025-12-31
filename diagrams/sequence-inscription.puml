@@ -1,0 +1,88 @@
+@startuml
+!theme plain
+autonumber
+skinparam sequenceMessageAlign center
+
+title Diagramme de Séquence - Inscrire un étudiant à un cours
+
+actor Étudiant
+participant "EtudiantController" as Controller
+participant "InscriptionService" as Service
+participant "InscriptionRepository" as Repo
+participant "EmailService" as Email
+participant "MockMailService" as Mock
+participant "NotificationService" as Notif
+participant "NotificationRepository" as NotifRepo
+
+Étudiant -> Controller : POST /etudiant/inscrire/{coursId}
+activate Controller
+
+Controller -> Controller : Récupérer l'étudiant authentifié
+Controller -> Service : inscrireEtudiant(etudiantId, coursId)
+activate Service
+
+Service -> Service : Vérifier si inscription existe déjà
+alt Inscription existe et est annulée
+    Service -> Service : Réactiver l'inscription
+else Nouvelle inscription
+    Service -> Repo : findByEtudiantIdAndCoursId()
+    activate Repo
+    Repo --> Service : Optional<Inscription>
+    deactivate Repo
+    
+    Service -> Service : Récupérer Etudiant et Cours
+    Service -> Service : Créer nouvelle Inscription
+    Service -> Repo : save(inscription)
+    activate Repo
+    Repo --> Service : Inscription sauvegardée
+    deactivate Repo
+end
+
+Service -> Email : envoyerEmailInscription(etudiant, cours)
+activate Email
+
+Email -> Email : Vérifier mode (simulation ou réel)
+alt Mode simulation
+    Email -> Mock : envoyerEmailInscription(etudiant, cours)
+    activate Mock
+    Mock -> Mock : Créer MockEmail
+    Mock -> Mock : Sauvegarder dans base
+    Mock -> Mock : Afficher dans console
+    Mock --> Email : Email simulé
+    deactivate Mock
+else Mode réel
+    Email -> Email : Envoyer via JavaMailSender
+    Email -> Email : Envoyer email à l'étudiant
+    Email -> Email : Envoyer notification au formateur
+end
+
+Email --> Service : Email envoyé
+deactivate Email
+
+alt Formateur existe
+    Service -> Notif : creerNotificationInscription(formateur, etudiant, cours)
+    activate Notif
+    Notif -> Notif : Créer Notification
+    Notif -> NotifRepo : save(notification)
+    activate NotifRepo
+    NotifRepo --> Notif : Notification sauvegardée
+    deactivate NotifRepo
+    Notif --> Service : Notification créée
+    deactivate Notif
+end
+
+Service --> Controller : Inscription créée
+deactivate Service
+
+Controller -> Controller : Ajouter message de succès
+Controller --> Étudiant : Redirect avec message
+deactivate Controller
+
+note right of Étudiant
+    L'étudiant voit un message
+    de confirmation et peut
+    consulter ses cours inscrits
+end note
+
+@enduml
+
