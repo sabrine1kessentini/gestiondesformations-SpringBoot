@@ -5,84 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${specialite.id != null ? 'Modifier' : 'Nouvelle'} + ' Spécialité'">Formulaire Spécialité</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link th:href="@{/css/custom.css}" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/admin/dashboard">
-                <i class="bi bi-mortarboard-fill"></i> Gestion Formation
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <div class="navbar-nav ms-auto">
-                    <a class="nav-link" href="/admin/dashboard"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
-                    <a class="nav-link" href="/admin/specialites"><i class="bi bi-tags-fill"></i> Spécialités</a>
-                    <a class="nav-link" href="/profil"><i class="bi bi-person-circle"></i> Mon Profil</a>
-                    <form th:action="@{/logout}" method="post" style="display:inline;">
-                        <button type="submit" class="nav-link btn btn-link" style="border:none; background:none; color:rgba(255,255,255,.55); padding:0.5rem 1rem;">
-                            <i class="bi bi-box-arrow-right"></i> Déconnexion
-                        </button>
-                    </form>
-                </div>
+            <a class="navbar-brand" href="/admin/dashboard">Gestion Formation</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/admin/specialites">Retour</a>
             </div>
         </div>
     </nav>
     
     <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="page-title" style="color: white; -webkit-text-fill-color: white; background: none;">
-                <i class="bi bi-tag-plus-fill" th:if="${specialite.id == null}"></i>
-                <i class="bi bi-tags-fill" th:if="${specialite.id != null}"></i>
-                <span th:text="${specialite.id != null ? 'Modifier' : 'Nouvelle'} + ' Spécialité'"></span>
-            </h1>
-            <a href="/admin/specialites" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Retour à la liste
-            </a>
-        </div>
+        <h1 th:text="${specialite.id != null ? 'Modifier' : 'Nouvelle'} + ' Spécialité'">Formulaire</h1>
         
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">
-                    <i class="bi bi-info-circle-fill"></i> Informations de la spécialité
-                </h5>
+        <form th:action="${specialite.id != null ? '/admin/specialites/' + specialite.id : '/admin/specialites'}" 
+              th:object="${specialite}" method="post">
+            <div class="mb-3">
+                <label for="nom" class="form-label">Nom</label>
+                <input type="text" class="form-control" id="nom" th:field="*{nom}" required>
             </div>
-            <div class="card-body">
-                <form th:action="${specialite.id != null ? '/admin/specialites/' + specialite.id : '/admin/specialites'}" 
-                      th:object="${specialite}" method="post">
-                    
-                    <div class="mb-3">
-                        <label for="nom" class="form-label">
-                            <i class="bi bi-tag"></i> Nom <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" class="form-control" id="nom" th:field="*{nom}" required>
-                        <small class="form-text text-muted">Nom de la spécialité (ex: Informatique, Mathématiques, etc.)</small>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="description" class="form-label">
-                            <i class="bi bi-file-text"></i> Description
-                        </label>
-                        <textarea class="form-control" id="description" th:field="*{description}" rows="4"></textarea>
-                        <small class="form-text text-muted">Description détaillée de la spécialité</small>
-                    </div>
-                    
-                    <div class="d-flex justify-content-end gap-2 mt-4">
-                        <a href="/admin/specialites" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Annuler
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-circle"></i> Enregistrer
-                        </button>
-                    </div>
-                </form>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" th:field="*{description}" rows="3"></textarea>
             </div>
-        </div>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+            <a href="/admin/specialites" class="btn btn-secondary">Annuler</a>
+        </form>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
+

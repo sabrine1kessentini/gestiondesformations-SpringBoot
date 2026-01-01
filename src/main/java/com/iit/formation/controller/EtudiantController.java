@@ -5,7 +5,6 @@ import com.iit.formation.entity.Inscription;
 import com.iit.formation.entity.Note;
 import com.iit.formation.entity.Seance;
 import com.iit.formation.service.CoursService;
-import com.iit.formation.service.EmailService;
 import com.iit.formation.service.EtudiantService;
 import com.iit.formation.service.InscriptionService;
 import com.iit.formation.service.NoteService;
@@ -41,9 +40,6 @@ public class EtudiantController {
     
     @Autowired
     private UtilisateurService utilisateurService;
-    
-    @Autowired
-    private EmailService emailService;
     
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
@@ -154,8 +150,7 @@ public class EtudiantController {
     }
     
     @PostMapping("/inscrire/{coursId}")
-    public String inscrireAuCours(@PathVariable Long coursId, 
-                                   org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+    public String inscrireAuCours(@PathVariable Long coursId) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && auth.isAuthenticated()) {
@@ -164,18 +159,9 @@ public class EtudiantController {
                         .orElseThrow(() -> new RuntimeException("Étudiant non trouvé"));
                 Long etudiantId = etudiant.getId();
                 inscriptionService.inscrireEtudiant(etudiantId, coursId);
-                
-                // Vérifier le mode d'envoi d'email pour adapter le message
-                if (emailService.estModeSimulation()) {
-                    redirectAttributes.addFlashAttribute("success", 
-                        "Inscription réussie ! L'email de confirmation a été simulé. Consultez la console de l'application pour voir le contenu de l'email.");
-                } else {
-                    redirectAttributes.addFlashAttribute("success", 
-                        "Inscription réussie ! Un email de confirmation vous a été envoyé à " + etudiant.getEmail() + ".");
-                }
             }
         } catch (RuntimeException e) {
-            redirectAttributes.addFlashAttribute("error", "Erreur lors de l'inscription: " + e.getMessage());
+            // L'erreur sera gérée par la redirection
         }
         return "redirect:/etudiant/cours/disponibles";
     }

@@ -1,848 +1,1085 @@
-# Rapport de Solution - Système de Gestion de Formation
+# Rapport de Solution - Application de Gestion d'un Centre de Formation
+
+**Projet :** Application Web de Gestion de Formation  
+**Framework :** Spring Boot 3.2.0  
+**Date :** 2025  
+**Auteur :** Projet réalisé dans le cadre du cours d'Architectures Logicielles Évoluées - Framework Spring
+
+---
 
 ## Table des Matières
 
-1. [Introduction](#introduction)
-2. [Spécification](#spécification)
-3. [Architecture](#architecture)
-4. [Conception Détaillée](#conception-détaillée)
-5. [Diagrammes UML](#diagrammes-uml)
-6. [Captures de Réalisation](#captures-de-réalisation)
-7. [Technologies Utilisées](#technologies-utilisées)
-8. [Conclusion](#conclusion)
+1. [Spécification](#1-spécification)
+2. [Architecture](#2-architecture)
+3. [Conception Détaillée](#3-conception-détaillée)
+4. [Captures de Réalisation](#4-captures-de-réalisation)
 
 ---
 
-## Introduction
+## 1. Spécification
 
-Ce document présente la solution complète d'un système de gestion de formation développé avec Spring Boot. L'application permet la gestion des étudiants, formateurs, cours, inscriptions, notes et planning dans un centre de formation.
+### 1.1 Contexte et Objectifs
 
-### Objectifs du Projet
+L'application de gestion d'un centre de formation est une solution web complète permettant de gérer l'ensemble des activités pédagogiques d'un établissement de formation. Elle répond aux besoins de trois types d'utilisateurs principaux : les administrateurs, les formateurs et les étudiants.
 
-- Automatiser la gestion administrative d'un centre de formation
-- Fournir des interfaces utilisateur modernes pour différents rôles
-- Implémenter une architecture hybride SSR/CSR
-- Assurer la sécurité et l'authentification des utilisateurs
-- Générer des rapports et statistiques
+### 1.2 Besoins Fonctionnels
 
----
+#### 1.2.1 Gestion des Utilisateurs
 
-## Spécification
+**Acteurs :** Administrateur
 
-### 2.1 Besoins Fonctionnels
+**Fonctionnalités :**
+- **Gestion des Étudiants :**
+  - Création, modification, suppression d'étudiants
+  - Attribution d'un matricule unique
+  - Association à un groupe
+  - Consultation de la liste des étudiants
+  - Calcul automatique de la moyenne générale
 
-#### 2.1.1 Gestion des Utilisateurs
+- **Gestion des Formateurs :**
+  - Création, modification, suppression de formateurs
+  - Attribution d'une spécialité
+  - Association aux cours
 
-**Rôle : Administrateur**
-- Créer, modifier, supprimer des étudiants
-- Créer, modifier, supprimer des formateurs
-- Gérer les groupes d'étudiants
-- Gérer les spécialités
-- Gérer les sessions académiques
-- Consulter les statistiques globales
-- Visualiser les emails simulés (mode développement)
+#### 1.2.2 Gestion Pédagogique
 
-**Rôle : Formateur**
-- Consulter ses cours assignés
-- Gérer les notes des étudiants inscrits à ses cours
-- Consulter les notifications (inscriptions/désinscriptions)
-- Consulter son profil et modifier ses informations
+**Acteurs :** Administrateur, Formateur
 
-**Rôle : Étudiant**
-- Consulter les cours disponibles
-- S'inscrire à un cours
-- Se désinscrire d'un cours
-- Consulter ses notes et moyenne générale
-- Consulter son emploi du temps
-- Consulter son profil et modifier ses informations
+**Fonctionnalités :**
+- **Gestion des Cours :**
+  - Création de cours avec code unique, titre, description
+  - Association à un formateur, une spécialité, une session
+  - Association à un ou plusieurs groupes
+  - Consultation des statistiques (nombre d'inscrits, taux de réussite)
 
-#### 2.1.2 Gestion des Cours
+- **Gestion des Groupes :**
+  - Création et gestion des groupes d'étudiants
+  - Association des étudiants aux groupes
 
-- Création de cours avec code unique
-- Association d'un formateur à un cours (obligatoire)
-- Association de groupes à un cours (plusieurs groupes possibles)
-- Association d'une spécialité et d'une session
-- Planification de séances (CM, TD, TP)
-- Détection de conflits dans le planning
+- **Gestion des Spécialités :**
+  - Création et gestion des spécialités (Informatique, Réseaux, IA, etc.)
 
-#### 2.1.3 Gestion des Inscriptions
+- **Gestion des Sessions :**
+  - Création de sessions (Semestre, Année)
+  - Définition des périodes (date début, date fin)
 
-- Inscription d'un étudiant à un cours
-- Vérification de l'unicité (un étudiant ne peut s'inscrire qu'une fois à un cours)
+#### 1.2.3 Gestion des Inscriptions
+
+**Acteurs :** Étudiant, Administrateur
+
+**Fonctionnalités :**
+- Inscription en ligne aux cours disponibles
 - Annulation d'inscription
-- Réactivation d'inscription annulée
-- Envoi automatique d'emails de confirmation
-- Notifications in-app pour les formateurs
+- Consultation des cours disponibles
+- Consultation des cours auxquels l'étudiant est inscrit
+- Vérification de non-duplication d'inscription
+- Envoi automatique d'emails de notification lors des inscriptions/désinscriptions
 
-#### 2.1.4 Gestion des Notes
+#### 1.2.4 Gestion des Notes
 
-- Attribution de notes par le formateur
-- Calcul automatique de la moyenne générale
-- Calcul du taux de réussite par cours
+**Acteurs :** Formateur, Administrateur
+
+**Fonctionnalités :**
+- Attribution de notes aux étudiants pour un cours
 - Consultation des notes par l'étudiant
+- Calcul automatique de la moyenne générale de l'étudiant
+- Calcul automatique du taux de réussite par cours
 
-#### 2.1.5 Notifications et Emails
+#### 1.2.5 Gestion du Planning
 
-- Email automatique à l'étudiant lors de l'inscription
-- Email automatique au formateur lors d'une inscription/désinscription
-- Notifications in-app pour les formateurs
-- Mode simulation (MockMailService) pour le développement
-- Mode réel avec configuration SMTP
+**Acteurs :** Administrateur, Formateur, Étudiant
 
-### 2.2 Besoins Non-Fonctionnels
+**Fonctionnalités :**
+- Planification des séances (CM, TD, TP)
+- Définition de la date/heure de début et fin
+- Attribution d'une salle
+- Consultation de l'emploi du temps par étudiant
+- Consultation de l'emploi du temps par formateur
+- Détection de conflits de planning
 
-- **Sécurité** : Authentification et autorisation par rôle (Spring Security)
-- **Performance** : Optimisation des requêtes JPA
-- **Maintenabilité** : Architecture en couches (MVC)
-- **Extensibilité** : API REST pour intégration future
-- **Interface utilisateur** : Design moderne et responsive (Bootstrap 5)
+#### 1.2.6 Reporting et Statistiques
+
+**Acteurs :** Administrateur, Formateur
+
+**Fonctionnalités :**
+- Tableau de bord avec statistiques globales
+- Statistiques par cours (nombre d'inscrits, taux de réussite)
+- Statistiques par étudiant (moyenne générale, nombre de cours)
+- Liste des cours les plus suivis
+- Génération de rapports PDF (notes par cours)
+
+### 1.3 Besoins Non-Fonctionnels
+
+#### 1.3.1 Sécurité
+- Authentification par nom d'utilisateur et mot de passe
+- Autorisation basée sur les rôles (ADMIN, FORMATEUR, ETUDIANT)
+- Chiffrement des mots de passe avec BCrypt
+- Protection CSRF
+- Sessions HTTP sécurisées
+
+#### 1.3.2 Performance
+- Support de bases de données relationnelles (H2 pour développement, MySQL pour production)
+- Optimisation des requêtes JPA
+- Cache Thymeleaf désactivé en développement
+
+#### 1.3.3 Maintenabilité
+- Architecture en couches (Controller, Service, Repository)
+- Séparation des responsabilités
+- Code modulaire et réutilisable
+- Documentation du code
+
+#### 1.3.4 Disponibilité
+- Support Docker pour déploiement
+- Configuration par profils Spring (dev, prod)
+- Persistance des données entre les redémarrages
+
+### 1.4 Contraintes Techniques
+
+- **Langage :** Java 17+
+- **Framework :** Spring Boot 3.2.0
+- **Base de données :** H2 (développement) / MySQL (production)
+- **Interface :** Thymeleaf (SSR) + Bootstrap 5
+- **API :** REST (JSON)
+- **Build :** Maven 3.6+
 
 ---
 
-## Architecture
+## 2. Architecture
 
-### 3.1 Configuration par Profils
-
-L'application utilise les **profils Spring Boot** pour gérer différentes configurations selon l'environnement :
-
-- **Profil `dev`** : H2 en mémoire (développement)
-- **Profil `prod`** : MySQL ou PostgreSQL (production)
-
-Cette approche permet une séparation claire entre l'environnement de développement et de production, avec des configurations optimisées pour chaque contexte.
-
-### 3.2 Architecture Globale
+### 2.1 Architecture Globale
 
 L'application suit une architecture en couches (Layered Architecture) avec séparation claire des responsabilités :
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    Présentation Layer                    │
-│  ┌──────────────┐              ┌──────────────┐         │
-│  │   SSR (Web)  │              │   CSR (API)  │         │
-│  │  Thymeleaf   │              │   REST API   │         │
-│  └──────────────┘              └──────────────┘         │
-└─────────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────────┐
-│                    Controllers Layer                     │
-│  ┌──────────────┐              ┌──────────────┐         │
-│  │ Web Controllers│             │ REST Controllers│      │
-│  └──────────────┘              └──────────────┘         │
-└─────────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────────┐
-│                    Services Layer                        │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │  Business Logic Services                         │   │
-│  │  (InscriptionService, EmailService, etc.)        │   │
-│  └──────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────────┐
-│                    Data Access Layer                     │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │  Spring Data JPA Repositories                    │   │
-│  └──────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────┘
-                        ↓
-┌─────────────────────────────────────────────────────────┐
-│                    Database Layer                        │
+│                    Couche Présentation                   │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
-│  │  H2 (Dev)    │  │ MySQL (Prod) │  │PostgreSQL(Prod)│ │
-│  │  (mémoire)   │  │              │  │              │  │
+│  │  Thymeleaf   │  │  REST API    │  │   Security   │  │
+│  │  (SSR)       │  │  (CSR)       │  │   Filter     │  │
+│  └──────────────┘  └──────────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────────┐
+│                    Couche Contrôleur                    │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │ AdminController│ │ FormateurCtrl │  │ EtudiantCtrl│  │
+│  │ + API REST   │  │ + API REST    │  │ + API REST │  │
+│  └──────────────┘  └──────────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────────┐
+│                    Couche Service                        │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │ EtudiantService│ │ CoursService │  │ Inscription │  │
+│  │ FormateurSvc  │ │ NoteService  │  │ Service     │  │
+│  │ ReportingSvc  │ │ EmailService │  │ SeanceSvc   │  │
+│  └──────────────┘  └──────────────┘  └──────────────┘  │
+└─────────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────────┐
+│                    Couche Persistance                    │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │ Repository   │  │   JPA/Hibernate│ │   Database   │  │
+│  │  Interfaces  │  │   ORM         │  │   (H2/MySQL) │  │
 │  └──────────────┘  └──────────────┘  └──────────────┘  │
 └─────────────────────────────────────────────────────────┘
 ```
 
-### 3.3 Architecture SSR/CSR
+### 2.2 Patterns Architecturaux
 
-L'application supporte deux modes de rendu :
+#### 2.2.1 MVC (Model-View-Controller)
+- **Model :** Entités JPA (Entity)
+- **View :** Templates Thymeleaf
+- **Controller :** Contrôleurs Spring MVC
 
-**SSR (Server-Side Rendering) - Thymeleaf**
-- Utilisé pour les interfaces d'administration
-- Rendu côté serveur avec templates Thymeleaf
-- Navigation complète via liens HTML
-- Authentification via sessions
+#### 2.2.2 Repository Pattern
+- Abstraction de l'accès aux données via Spring Data JPA
+- Interfaces Repository qui étendent `JpaRepository`
+- Réduction du code boilerplate
 
-**CSR (Client-Side Rendering) - API REST**
-- API REST disponible sous `/api/*`
-- Format JSON pour les réponses
-- Peut être consommée par une application SPA (Angular, React, Vue.js)
-- Authentification via JWT (à implémenter)
+#### 2.2.3 Service Layer Pattern
+- Logique métier encapsulée dans les services
+- Transactions gérées au niveau service
+- Réutilisabilité entre contrôleurs SSR et REST
 
-### 3.4 Patterns de Conception Utilisés
+#### 2.2.4 DTO Pattern
+- Utilisé pour les transferts de données (ChangePasswordDTO, UpdateProfileDTO)
+- Séparation entre entités JPA et données transférées
 
-- **Repository Pattern** : Abstraction de l'accès aux données
-- **Service Layer Pattern** : Logique métier séparée des controllers
-- **DTO Pattern** : Transfert de données optimisé
-- **Strategy Pattern** : EmailService avec MockMailService et JavaMailSender
-- **Template Method** : Structure commune pour les controllers
+#### 2.2.5 Inheritance Strategy (JPA)
+- Utilisation de l'héritage JOINED pour Utilisateur/Etudiant/Formateur
+- Table parente `utilisateurs` et tables enfants `etudiants`, `formateurs`
 
----
+### 2.3 Technologies Utilisées
 
-## Conception Détaillée
-
-### 4.1 Modèle de Données
-
-#### 4.1.1 Entités Principales
-
-**Utilisateur** (Classe abstraite)
-- `id` : Long (PK)
-- `username` : String (unique)
-- `password` : String (encodé)
-- `email` : String (unique)
-- `nom` : String
-- `prenom` : String
-- `roles` : Set<Role> (ADMIN, FORMATEUR, ETUDIANT)
-- `active` : boolean
-
-**Etudiant** (Hérite de Utilisateur)
-- `matricule` : String (unique)
-- `dateInscription` : LocalDate
-- `groupe` : Groupe (ManyToOne)
-- `inscriptions` : List<Inscription> (OneToMany)
-- `notes` : List<Note> (OneToMany)
-
-**Formateur** (Hérite de Utilisateur)
-- `specialite` : String
-- `cours` : List<Cours> (OneToMany)
-- `notifications` : List<Notification> (OneToMany)
-
-**Cours**
-- `id` : Long (PK)
-- `code` : String (unique)
-- `titre` : String
-- `description` : String
-- `formateur` : Formateur (ManyToOne, obligatoire)
-- `specialite` : Specialite (ManyToOne)
-- `session` : Session (ManyToOne)
-- `groupes` : List<Groupe> (ManyToMany)
-- `inscriptions` : List<Inscription> (OneToMany)
-- `notes` : List<Note> (OneToMany)
-- `seances` : List<Seance> (OneToMany)
-
-**Inscription**
-- `id` : Long (PK)
-- `dateInscription` : LocalDateTime
-- `etudiant` : Etudiant (ManyToOne)
-- `cours` : Cours (ManyToOne)
-- `statut` : StatutInscription (ACTIVE, ANNULEE)
-- Contrainte unique : (etudiant_id, cours_id)
-
-**Note**
-- `id` : Long (PK)
-- `valeur` : Double
-- `commentaire` : String
-- `etudiant` : Etudiant (ManyToOne)
-- `cours` : Cours (ManyToOne)
-- Contrainte unique : (etudiant_id, cours_id)
-
-**Groupe**
-- `id` : Long (PK)
-- `nom` : String (unique)
-- `description` : String
-- `etudiants` : List<Etudiant> (OneToMany)
-- `cours` : List<Cours> (ManyToMany)
-
-**Seance**
-- `id` : Long (PK)
-- `dateHeureDebut` : LocalDateTime
-- `dateHeureFin` : LocalDateTime
-- `salle` : String
-- `type` : String (CM, TD, TP)
-- `cours` : Cours (ManyToOne)
-
-**Notification**
-- `id` : Long (PK)
-- `formateur` : Formateur (ManyToOne)
-- `type` : TypeNotification (INSCRIPTION, DESINSCRIPTION)
-- `message` : String
-- `dateCreation` : LocalDateTime
-- `estLue` : boolean
-
-#### 4.1.2 Relations Principales
-
-```
-Utilisateur (abstrait)
-    ├── Etudiant
-    │   ├── ManyToOne → Groupe
-    │   ├── OneToMany → Inscription
-    │   └── OneToMany → Note
-    └── Formateur
-        ├── OneToMany → Cours
-        └── OneToMany → Notification
-
-Cours
-    ├── ManyToOne → Formateur (obligatoire)
-    ├── ManyToOne → Specialite
-    ├── ManyToOne → Session
-    ├── ManyToMany → Groupe
-    ├── OneToMany → Inscription
-    ├── OneToMany → Note
-    └── OneToMany → Seance
-
-Inscription
-    ├── ManyToOne → Etudiant
-    └── ManyToOne → Cours
-    (Contrainte unique: etudiant + cours)
-
-Note
-    ├── ManyToOne → Etudiant
-    └── ManyToOne → Cours
-    (Contrainte unique: etudiant + cours)
-```
-
-### 4.2 Services Métier
-
-#### 4.2.1 InscriptionService
-
-**Responsabilités :**
-- Gérer les inscriptions des étudiants aux cours
-- Vérifier l'unicité des inscriptions
-- Gérer les statuts (ACTIVE, ANNULEE)
-- Déclencher l'envoi d'emails
-- Créer les notifications pour les formateurs
-
-**Méthodes principales :**
-- `inscrireEtudiant(Long etudiantId, Long coursId)` : Inscrit un étudiant à un cours
-- `annulerInscription(Long inscriptionId)` : Annule une inscription
-- `getInscriptionsByEtudiant(Long etudiantId)` : Récupère les inscriptions d'un étudiant
-- `getInscriptionsByCours(Long coursId)` : Récupère les inscriptions d'un cours
-
-#### 4.2.2 EmailService
-
-**Responsabilités :**
-- Envoyer des emails réels (si configuré)
-- Déléguer au MockMailService en mode simulation
-- Gérer les erreurs d'envoi sans bloquer le processus
-
-**Méthodes principales :**
-- `envoyerEmailInscription(Etudiant, Cours)` : Envoie un email d'inscription
-- `envoyerEmailDesinscription(Etudiant, Cours, Formateur)` : Envoie un email de désinscription
-- `estModeSimulation()` : Vérifie si le mode simulation est activé
-
-#### 4.2.3 MockMailService
-
-**Responsabilités :**
-- Simuler l'envoi d'emails en mode développement
-- Stocker les emails dans la base de données
-- Afficher les emails dans la console
-- Permettre la visualisation via l'interface web
-
-#### 4.2.4 NotificationService
-
-**Responsabilités :**
-- Créer des notifications pour les formateurs
-- Gérer le statut de lecture des notifications
-- Compter les notifications non lues
-
-### 4.3 Controllers
-
-#### 4.3.1 Web Controllers (SSR)
-
-- **AdminController** : Gestion administrative (CRUD complet)
-- **FormateurController** : Interface formateur (cours, notes, notifications)
-- **EtudiantController** : Interface étudiant (inscriptions, notes, emploi du temps)
-- **ProfilController** : Gestion du profil utilisateur
-
-#### 4.3.2 REST Controllers (CSR)
-
-- **EtudiantRestController** : API REST pour les étudiants
-- **CoursRestController** : API REST pour les cours
-- **InscriptionRestController** : API REST pour les inscriptions
-- **NoteRestController** : API REST pour les notes
-- **NotificationRestController** : API REST pour les notifications
-
-### 4.4 Sécurité
-
-**Spring Security Configuration :**
-- Authentification par formulaire
-- Rôles : ADMIN, FORMATEUR, ETUDIANT
-- Routes protégées par rôle
-- Encodage des mots de passe (BCrypt)
-- Sessions HTTP
-
-**Routes protégées :**
-- `/admin/*` : Accessible uniquement aux ADMIN
-- `/formateur/*` : Accessible aux FORMATEUR et ADMIN
-- `/etudiant/*` : Accessible aux ETUDIANT et ADMIN
-- `/api/*` : Accessible selon le rôle
-
----
-
-## Diagrammes UML
-
-### 5.1 Diagramme de Cas d'Utilisation
-
-#### Acteurs
-- **Administrateur** : Gère l'ensemble du système
-- **Formateur** : Gère ses cours et notes
-- **Étudiant** : Consulte et s'inscrit aux cours
-
-#### Cas d'utilisation par acteur
-
-**Administrateur :**
-- Gérer les étudiants (créer, modifier, supprimer, lister)
-- Gérer les formateurs (créer, modifier, supprimer, lister)
-- Gérer les cours (créer, modifier, supprimer, lister)
-- Gérer les groupes (créer, modifier, supprimer, lister)
-- Gérer les spécialités (créer, modifier, supprimer, lister)
-- Gérer les sessions (créer, modifier, supprimer, lister)
-- Gérer les séances (créer, modifier, supprimer, lister)
-- Consulter les statistiques
-- Générer des rapports PDF
-- Visualiser les emails simulés
-
-**Formateur :**
-- Consulter ses cours
-- Gérer les notes (attribuer, modifier)
-- Consulter les notifications
-- Marquer les notifications comme lues
-- Consulter son profil
-- Modifier son profil
-
-**Étudiant :**
-- Consulter les cours disponibles
-- S'inscrire à un cours
-- Se désinscrire d'un cours
-- Consulter ses cours inscrits
-- Consulter ses notes
-- Consulter son emploi du temps
-- Consulter son profil
-- Modifier son profil
-- Changer son mot de passe
-
-#### Diagramme textuel (à créer avec un outil UML)
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Système de Gestion                   │
-│                      de Formation                        │
-└─────────────────────────────────────────────────────────┘
-         │              │              │
-         │              │              │
-    ┌────▼────┐   ┌────▼────┐   ┌────▼────┐
-    │ Admin   │   │Formateur│   │ Étudiant│
-    └────┬────┘   └────┬────┘   └────┬────┘
-         │             │              │
-         │             │              │
-    [Gérer étudiants]  │              │
-    [Gérer formateurs] │              │
-    [Gérer cours]      │              │
-    [Statistiques]     │              │
-                       │              │
-                  [Gérer notes]         │
-                  [Notifications]    │
-                                      │
-                              [S'inscrire]
-                              [Consulter notes]
-                              [Emploi du temps]
-```
-
-### 5.2 Diagramme de Classes
-
-#### Description des relations principales
-
-**Héritage :**
-- `Etudiant extends Utilisateur`
-- `Formateur extends Utilisateur`
-
-**Associations :**
-- `Cours` ↔ `Formateur` : ManyToOne (un cours a un formateur, un formateur a plusieurs cours)
-- `Cours` ↔ `Groupe` : ManyToMany (un cours peut être suivi par plusieurs groupes, un groupe peut suivre plusieurs cours)
-- `Etudiant` ↔ `Groupe` : ManyToOne (un étudiant appartient à un groupe, un groupe contient plusieurs étudiants)
-- `Etudiant` ↔ `Cours` (via Inscription) : ManyToMany (un étudiant peut s'inscrire à plusieurs cours, un cours peut avoir plusieurs étudiants)
-- `Inscription` : Association entre `Etudiant` et `Cours` avec attributs (date, statut)
-- `Note` : Association entre `Etudiant` et `Cours` avec attributs (valeur, commentaire)
-- `Seance` ↔ `Cours` : ManyToOne (une séance appartient à un cours, un cours a plusieurs séances)
-- `Notification` ↔ `Formateur` : ManyToOne (une notification est pour un formateur, un formateur a plusieurs notifications)
-
-#### Diagramme textuel (à créer avec un outil UML)
-
-```
-┌─────────────────────┐
-│    Utilisateur      │
-│  (abstrait)         │
-├─────────────────────┤
-│ +id: Long           │
-│ +username: String   │
-│ +password: String   │
-│ +email: String      │
-│ +nom: String        │
-│ +prenom: String      │
-│ +roles: Set<Role>   │
-└──────────┬──────────┘
-           │
-     ┌─────┴─────┐
-     │           │
-┌────▼────┐ ┌───▼──────┐
-│ Étudiant│ │Formateur │
-├─────────┤ ├──────────┤
-│+matricule│ │+specialite│
-└────┬────┘ └────┬─────┘
-     │           │
-     │           │
-     │      ┌────▼────┐
-     │      │  Cours  │
-     │      ├─────────┤
-     │      │+code    │
-     │      │+titre   │
-     │      └────┬────┘
-     │           │
-     │      ┌────▼────┐
-     │      │Inscription│
-     │      ├─────────┤
-     │      │+date    │
-     │      │+statut  │
-     │      └─────────┘
-     │
-┌────▼────┐
-│  Groupe │
-├─────────┤
-│+nom     │
-└─────────┘
-```
-
-### 5.3 Diagramme de Séquence - "Inscrire un étudiant à un cours"
-
-#### Scénario principal
-
-1. **Étudiant** : Accède à la page "Cours Disponibles"
-2. **Étudiant** : Clique sur "S'inscrire" pour un cours
-3. **EtudiantController** : Reçoit la requête POST `/etudiant/inscrire/{coursId}`
-4. **EtudiantController** : Récupère l'étudiant authentifié
-5. **EtudiantController** : Appelle `InscriptionService.inscrireEtudiant()`
-6. **InscriptionService** : Vérifie si une inscription existe déjà
-7. **InscriptionService** : Récupère l'étudiant et le cours depuis les repositories
-8. **InscriptionService** : Crée une nouvelle inscription
-9. **InscriptionRepository** : Sauvegarde l'inscription
-10. **InscriptionService** : Appelle `EmailService.envoyerEmailInscription()`
-11. **EmailService** : Vérifie le mode (simulation ou réel)
-12. **EmailService** : Si simulation → `MockMailService.envoyerEmailInscription()`
-13. **MockMailService** : Sauvegarde l'email dans la base de données
-14. **EmailService** : Si réel → Envoie l'email via `JavaMailSender`
-15. **InscriptionService** : Appelle `NotificationService.creerNotificationInscription()`
-16. **NotificationService** : Crée une notification pour le formateur
-17. **NotificationRepository** : Sauvegarde la notification
-18. **EtudiantController** : Redirige vers "Cours Disponibles" avec message de succès
-
-#### Diagramme textuel (à créer avec un outil UML)
-
-```
-Étudiant → EtudiantController → InscriptionService → InscriptionRepository
-                                      │
-                                      ├→ EmailService → MockMailService → MockEmailRepository
-                                      │                    │
-                                      │                    └→ Console (affichage)
-                                      │
-                                      └→ NotificationService → NotificationRepository
-```
-
-### 5.4 Diagramme de Composants - Architecture SSR/CSR
-
-#### Composants principaux
-
-**Couche Présentation :**
-- **Thymeleaf Templates** : Templates HTML avec Thymeleaf
-- **Bootstrap CSS/JS** : Framework CSS pour le style
-- **REST Client** : Application cliente (Angular/React/Vue.js) - optionnel
-
-**Couche Contrôleurs :**
-- **Web Controllers** : Controllers Thymeleaf (AdminController, EtudiantController, etc.)
-- **REST Controllers** : Controllers API REST (EtudiantRestController, etc.)
-
-**Couche Services :**
-- **Business Services** : Services métier (InscriptionService, EmailService, etc.)
-- **Security Service** : Service de sécurité (Spring Security)
-
-**Couche Données :**
-- **Repositories** : Spring Data JPA Repositories
-- **Entities** : Entités JPA
-
-**Couche Infrastructure :**
-- **Database** : H2 (dev) / MySQL (prod)
-- **Email Service** : JavaMailSender / MockMailService
-
-#### Diagramme textuel (à créer avec un outil UML)
-
-```
-┌─────────────────────────────────────────────────────────┐
-│              Couche Présentation                        │
-│  ┌──────────────┐              ┌──────────────┐         │
-│  │  Thymeleaf   │              │ REST Client  │         │
-│  │  Templates   │              │  (SPA)       │         │
-│  └──────┬───────┘              └──────┬───────┘         │
-└─────────┼──────────────────────────────┼────────────────┘
-          │                              │
-┌─────────▼──────────────────────────────▼────────────────┐
-│              Couche Contrôleurs                         │
-│  ┌──────────────┐              ┌──────────────┐         │
-│  │ Web Controllers│            │ REST Controllers│       │
-│  └──────┬───────┘              └──────┬───────┘         │
-└─────────┼──────────────────────────────┼────────────────┘
-          │                              │
-┌─────────▼──────────────────────────────▼────────────────┐
-│              Couche Services                            │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │  InscriptionService, EmailService, etc.          │   │
-│  └──────────────────────────────────────────────────┘   │
-└─────────────────────────┬───────────────────────────────┘
-                          │
-┌─────────────────────────▼───────────────────────────────┐
-│              Couche Données                             │
-│  ┌──────────────┐              ┌──────────────┐         │
-│  │ Repositories │              │   Entities    │         │
-│  └──────┬───────┘              └──────┬───────┘         │
-└─────────┼──────────────────────────────┼────────────────┘
-          │                              │
-┌─────────▼──────────────────────────────▼────────────────┐
-│              Infrastructure                              │
-│  ┌──────────────┐              ┌──────────────┐         │
-│  │  Database    │              │ Email Service│         │
-│  └──────────────┘              └──────────────┘         │
-└─────────────────────────────────────────────────────────┘
-```
-
----
-
-## Captures de Réalisation
-
-### 6.1 Interfaces Utilisateur
-
-#### 6.1.1 Page de Connexion
-- **URL** : `/login`
-- **Description** : Formulaire de connexion avec champs username et password
-- **Design** : Interface moderne avec gradient, icônes Bootstrap
-
-#### 6.1.2 Tableau de Bord Administrateur
-- **URL** : `/admin/dashboard`
-- **Description** : Vue d'ensemble avec statistiques (total étudiants, formateurs, cours, taux de réussite)
-- **Design** : Cards avec gradients, icônes, graphiques
-
-#### 6.1.3 Gestion des Étudiants
-- **URL** : `/admin/etudiants`
-- **Liste** : Tableau moderne avec actions (modifier, supprimer)
-- **Formulaire** : Card avec header coloré, champs organisés en colonnes, icônes
-
-#### 6.1.4 Interface Étudiant - Cours Disponibles
-- **URL** : `/etudiant/cours/disponibles`
-- **Description** : Liste des cours avec bouton "S'inscrire"
-- **Fonctionnalité** : Inscription en un clic avec confirmation
-
-#### 6.1.5 Interface Formateur - Notifications
-- **URL** : `/formateur/notifications`
-- **Description** : Liste des notifications avec badge de compteur
-- **Fonctionnalité** : Marquer comme lu, marquer toutes comme lues
-
-#### 6.1.6 Emails Simulés (Admin)
-- **URL** : `/admin/emails`
-- **Description** : Liste de tous les emails simulés avec détails
-- **Fonctionnalité** : Visualisation du contenu des emails
-
-### 6.2 Fonctionnalités Clés
-
-#### 6.2.1 Inscription avec Email Automatique
-- **Processus** : 
-  1. Étudiant clique sur "S'inscrire"
-  2. Inscription créée dans la base
-  3. Email envoyé à l'étudiant (simulé ou réel)
-  4. Notification créée pour le formateur
-  5. Message de confirmation affiché
-
-#### 6.2.2 Gestion des Notes
-- **Processus** :
-  1. Formateur accède à "Gérer les notes" d'un cours
-  2. Liste des étudiants inscrits affichée
-  3. Formulaire pour attribuer/modifier les notes
-  4. Calcul automatique de la moyenne
-
-#### 6.2.3 Emploi du Temps
-- **Processus** :
-  1. Étudiant consulte son emploi du temps
-  2. Affichage des séances de ses cours inscrits
-  3. Informations : date, heure, salle, type (CM/TD/TP)
-
-### 6.3 Points Techniques Remarquables
-
-- **Architecture hybride SSR/CSR** : Support des deux modes de rendu
-- **Sécurité multi-rôles** : Gestion fine des autorisations
-- **Emails automatiques** : Système flexible avec mode simulation
-- **Notifications in-app** : Système de notifications pour les formateurs
-- **Interface moderne** : Design cohérent avec Bootstrap 5 et icônes
-
----
-
-## Technologies Utilisées
-
-### 7.1 Backend
+#### 2.3.1 Backend
 - **Spring Boot 3.2.0** : Framework principal
+- **Spring MVC** : Gestion des requêtes HTTP
 - **Spring Data JPA** : Accès aux données
 - **Spring Security** : Authentification et autorisation
 - **Hibernate** : ORM
-- **Maven** : Gestion des dépendances
+- **JasperReports** : Génération de rapports PDF
 
-### 7.2 Frontend
-- **Thymeleaf** : Templates serveur
+#### 2.3.2 Frontend
+- **Thymeleaf** : Moteur de templates (Server-Side Rendering)
 - **Bootstrap 5** : Framework CSS
-- **Bootstrap Icons** : Bibliothèque d'icônes
-- **JavaScript** : Interactivité
+- **Bootstrap Icons** : Icônes
 
-### 7.3 Base de Données et Profils
+#### 2.3.3 Base de Données
+- **H2 Database** : Base de données en mémoire pour le développement
+- **MySQL 8.0** : Base de données de production
 
-L'application utilise les **profils Spring Boot** pour gérer différentes configurations :
+#### 2.3.4 Outils
+- **Maven** : Gestion des dépendances et build
+- **Docker** : Containerisation
+- **Spring Boot DevTools** : Outils de développement
 
-**Profil Dev (`application-dev.properties`)**
-- **H2 Database en mémoire** : `jdbc:h2:mem:gestion_formation`
-- Données volatiles (perdues au redémarrage)
-- H2 Console activée pour le développement
-- Logging DEBUG
-- Thymeleaf cache désactivé
-
-**Profil Prod (`application-prod.properties`)**
-- **MySQL** : Base de données relationnelle (par défaut)
-- **PostgreSQL** : Alternative configurable
-- Données persistantes
-- H2 Console désactivée
-- Logging INFO
-- Thymeleaf cache activé
-
-**Activation :**
-```bash
-# Développement
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
-
-# Production
-mvn spring-boot:run -Dspring-boot.run.profiles=prod
-```
-
-### 7.4 Outils
-- **Docker** : Containerisation (optionnel)
-- **Git** : Contrôle de version
-
----
-
-## Conclusion
-
-### 8.1 Objectifs Atteints
-
-✅ **Gestion complète** : Tous les modules demandés sont implémentés
-✅ **Architecture hybride** : Support SSR et CSR
-✅ **Sécurité** : Authentification et autorisation par rôle
-✅ **Interface moderne** : Design cohérent et responsive
-✅ **Notifications** : Système d'emails et notifications in-app
-✅ **Extensibilité** : API REST pour intégrations futures
-
-### 8.2 Points Forts
-
-- Architecture en couches claire et maintenable
-- Code bien structuré et documenté
-- Interface utilisateur moderne et intuitive
-- Système de notifications complet
-- Gestion d'erreurs robuste
-
-### 8.3 Améliorations Possibles
-
-- Implémentation de JWT pour l'API REST
-- Ajout de tests unitaires et d'intégration
-- Optimisation des performances (cache)
-- Ajout de fonctionnalités de recherche avancée
-- Export des données en différents formats
-
----
-
-## Annexes
-
-### A. Structure du Projet
+### 2.4 Structure du Projet
 
 ```
 gestion-formation/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/iit/formation/
-│   │   │   ├── entity/          # Entités JPA
-│   │   │   ├── repository/      # Repositories
-│   │   │   ├── service/         # Services métier
-│   │   │   ├── controller/     # Controllers
-│   │   │   │   ├── api/        # REST Controllers
-│   │   │   │   └── ...         # Web Controllers
-│   │   │   ├── dto/            # Data Transfer Objects
-│   │   │   └── config/         # Configuration
+│   │   │   ├── config/              # Configuration (Security, DataInitializer)
+│   │   │   ├── controller/          # Contrôleurs
+│   │   │   │   ├── api/             # Contrôleurs REST
+│   │   │   │   ├── AdminController.java
+│   │   │   │   ├── FormateurController.java
+│   │   │   │   ├── EtudiantController.java
+│   │   │   │   └── LoginController.java
+│   │   │   ├── dto/                 # Data Transfer Objects
+│   │   │   ├── entity/              # Entités JPA
+│   │   │   ├── repository/          # Interfaces Repository
+│   │   │   ├── service/             # Services métier
+│   │   │   └── GestionFormationApplication.java
 │   │   └── resources/
-│   │       ├── templates/       # Templates Thymeleaf
-│   │       ├── static/css/      # Fichiers CSS
+│   │       ├── templates/           # Templates Thymeleaf
+│   │       │   ├── admin/           # Interface admin
+│   │       │   ├── formateur/       # Interface formateur
+│   │       │   ├── etudiant/        # Interface étudiant
+│   │       │   └── login.html
+│   │       ├── static/              # Ressources statiques
+│   │       │   └── css/
+│   │       ├── reports/             # Templates JasperReports
 │   │       └── application.properties
-│   └── test/
+│   └── test/                        # Tests unitaires
+├── data/                            # Données H2 (persistantes)
+├── docker-compose.yml
+├── Dockerfile
 └── pom.xml
 ```
 
-### B. Configuration des Profils Spring Boot
+### 2.5 Flux de Données
 
-#### B.1 Profil Dev (Développement)
-
-**Fichier** : `src/main/resources/application-dev.properties`
-
-**Configuration :**
-- Base de données : H2 en mémoire (`jdbc:h2:mem:gestion_formation`)
-- Persistance : Données perdues au redémarrage
-- H2 Console : Activée (`/h2-console`)
-- Logging : Mode DEBUG
-- Thymeleaf Cache : Désactivé
-
-**Activation :**
-```bash
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+#### 2.5.1 Flux SSR (Server-Side Rendering)
+```
+Client (Navigateur)
+    ↓ HTTP Request
+Controller (Thymeleaf)
+    ↓ Appel Service
+Service Layer
+    ↓ Appel Repository
+Repository (JPA)
+    ↓ Requête SQL
+Base de Données
+    ↓ Résultat
+Repository → Service → Controller → Thymeleaf Template → HTML → Client
 ```
 
-#### B.2 Profil Prod (Production)
-
-**Fichier** : `src/main/resources/application-prod.properties`
-
-**Configuration MySQL (par défaut) :**
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/gestion_formation
-spring.datasource.username=${DB_USERNAME:root}
-spring.datasource.password=${DB_PASSWORD:root}
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+#### 2.5.2 Flux REST API
 ```
-
-**Configuration PostgreSQL (alternative) :**
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/gestion_formation
-spring.datasource.username=${DB_USERNAME:postgres}
-spring.datasource.password=${DB_PASSWORD:postgres}
-spring.datasource.driver-class-name=org.postgresql.Driver
+Client (SPA/Mobile)
+    ↓ HTTP Request (JSON)
+REST Controller
+    ↓ Appel Service
+Service Layer
+    ↓ Appel Repository
+Repository (JPA)
+    ↓ Requête SQL
+Base de Données
+    ↓ Résultat
+Repository → Service → Controller → JSON Response → Client
 ```
-
-**Activation :**
-```bash
-# Avec variables d'environnement
-export DB_USERNAME=myuser
-export DB_PASSWORD=mypassword
-java -jar app.jar --spring.profiles.active=prod
-```
-
-**Variables d'environnement :**
-- `DB_USERNAME` : Nom d'utilisateur de la base de données
-- `DB_PASSWORD` : Mot de passe de la base de données
-- `MAIL_USERNAME` : Email pour l'envoi d'emails (optionnel)
-- `MAIL_PASSWORD` : Mot de passe d'application email (optionnel)
-
-### C. Endpoints API REST
-
-- `GET /api/etudiants` : Liste des étudiants
-- `POST /api/etudiants` : Créer un étudiant
-- `GET /api/cours` : Liste des cours
-- `POST /api/inscriptions/etudiant/{id}/cours/{id}` : Inscrire un étudiant
-- `GET /api/notes/etudiant/{id}` : Notes d'un étudiant
-- `GET /api/formateur/notifications` : Notifications d'un formateur
-
-### D. Scripts PlantUML (pour générer les diagrammes)
-
-Les diagrammes peuvent être générés avec PlantUML. Des fichiers `.puml` peuvent être créés pour chaque diagramme.
 
 ---
 
-**Document préparé pour** : Rapport de projet - Système de Gestion de Formation
-**Date** : 2024
-**Version** : 1.0
+## 3. Conception Détaillée
+
+### 3.1 Modèle de Données
+
+#### 3.1.1 Diagramme de Classes (Entités)
+
+**Note :** Insérer ici le diagramme de classes UML des entités
+
+#### 3.1.2 Entités Principales
+
+##### Utilisateur (Classe Abstraite)
+```java
+@Entity
+@Table(name = "utilisateurs")
+@Inheritance(strategy = InheritanceType.JOINED)
+public class Utilisateur {
+    - Long id
+    - String username (unique)
+    - String password (encrypted)
+    - String email (unique)
+    - String nom
+    - String prenom
+    - Set<Role> roles
+    - boolean active
+}
+```
+
+**Relations :**
+- Héritage : Etudiant, Formateur héritent de Utilisateur
+
+##### Etudiant
+```java
+@Entity
+@Table(name = "etudiants")
+@PrimaryKeyJoinColumn(name = "utilisateur_id")
+public class Etudiant extends Utilisateur {
+    - String matricule (unique)
+    - LocalDate dateInscription
+    - Groupe groupe (ManyToOne)
+    - List<Inscription> inscriptions (OneToMany)
+    - List<Note> notes (OneToMany)
+    
+    + double getMoyenneGenerale()
+}
+```
+
+**Relations :**
+- ManyToOne avec Groupe
+- OneToMany avec Inscription
+- OneToMany avec Note
+
+##### Formateur
+```java
+@Entity
+@Table(name = "formateurs")
+@PrimaryKeyJoinColumn(name = "utilisateur_id")
+public class Formateur extends Utilisateur {
+    - String specialite
+    
+    - List<Cours> cours (OneToMany)
+}
+```
+
+**Relations :**
+- OneToMany avec Cours
+
+##### Cours
+```java
+@Entity
+@Table(name = "cours")
+public class Cours {
+    - Long id
+    - String code (unique)
+    - String titre
+    - String description
+    - Formateur formateur (ManyToOne)
+    - Specialite specialite (ManyToOne)
+    - Session session (ManyToOne)
+    - List<Groupe> groupes (ManyToMany)
+    - List<Inscription> inscriptions (OneToMany)
+    - List<Note> notes (OneToMany)
+    - List<Seance> seances (OneToMany)
+    
+    + int getNombreInscrits()
+    + double getTauxReussite()
+}
+```
+
+**Relations :**
+- ManyToOne avec Formateur
+- ManyToOne avec Specialite
+- ManyToOne avec Session
+- ManyToMany avec Groupe
+- OneToMany avec Inscription
+- OneToMany avec Note
+- OneToMany avec Seance
+
+##### Inscription
+```java
+@Entity
+@Table(name = "inscriptions")
+public class Inscription {
+    - Long id
+    - LocalDateTime dateInscription
+    - Etudiant etudiant (ManyToOne)
+    - Cours cours (ManyToOne)
+    - StatutInscription statut (ACTIVE, ANNULEE)
+}
+```
+
+**Contraintes :**
+- UniqueConstraint sur (etudiant_id, cours_id)
+
+##### Note
+```java
+@Entity
+@Table(name = "notes")
+public class Note {
+    - Long id
+    - double valeur
+    - String commentaire
+    - Etudiant etudiant (ManyToOne)
+    - Cours cours (ManyToOne)
+}
+```
+
+##### Seance
+```java
+@Entity
+@Table(name = "seances")
+public class Seance {
+    - Long id
+    - LocalDateTime dateHeureDebut
+    - LocalDateTime dateHeureFin
+    - String salle
+    - Cours cours (ManyToOne)
+    - String type (CM, TD, TP)
+}
+```
+
+##### Groupe
+```java
+@Entity
+@Table(name = "groupes")
+public class Groupe {
+    - Long id
+    - String code
+    - String description
+    - List<Etudiant> etudiants (OneToMany)
+    - List<Cours> cours (ManyToMany)
+}
+```
+
+##### Specialite
+```java
+@Entity
+@Table(name = "specialites")
+public class Specialite {
+    - Long id
+    - String nom
+    - String description
+    - List<Cours> cours (OneToMany)
+}
+```
+
+##### Session
+```java
+@Entity
+@Table(name = "sessions")
+public class Session {
+    - Long id
+    - String nom
+    - LocalDate dateDebut
+    - LocalDate dateFin
+    - TypeSession type (SEMESTRE, ANNEE)
+    - List<Cours> cours (OneToMany)
+}
+```
+
+#### 3.1.3 Diagramme de Relations
+
+**Note :** Insérer ici le diagramme ER (Entity-Relationship) de la base de données
+
+**Relations principales :**
+- Utilisateur ← Etudiant (héritage JOINED)
+- Utilisateur ← Formateur (héritage JOINED)
+- Etudiant → Groupe (ManyToOne)
+- Etudiant → Inscription (OneToMany)
+- Etudiant → Note (OneToMany)
+- Formateur → Cours (OneToMany)
+- Cours → Formateur (ManyToOne)
+- Cours → Specialite (ManyToOne)
+- Cours → Session (ManyToOne)
+- Cours ↔ Groupe (ManyToMany)
+- Cours → Inscription (OneToMany)
+- Cours → Note (OneToMany)
+- Cours → Seance (OneToMany)
+
+### 3.2 Couche Service
+
+#### 3.2.1 Services Principaux
+
+##### EtudiantService
+**Responsabilités :**
+- CRUD des étudiants
+- Calcul de la moyenne générale
+- Recherche par matricule
+
+**Méthodes principales :**
+```java
+List<Etudiant> getAllEtudiants()
+Optional<Etudiant> getEtudiantById(Long id)
+Optional<Etudiant> getEtudiantByMatricule(String matricule)
+Etudiant createEtudiant(Etudiant etudiant)
+Etudiant updateEtudiant(Long id, Etudiant etudiant)
+void deleteEtudiant(Long id)
+double getMoyenneGenerale(Long etudiantId)
+```
+
+##### FormateurService
+**Responsabilités :**
+- CRUD des formateurs
+- Gestion des spécialités
+
+**Méthodes principales :**
+```java
+List<Formateur> getAllFormateurs()
+Optional<Formateur> getFormateurById(Long id)
+Formateur createFormateur(Formateur formateur)
+Formateur updateFormateur(Long id, Formateur formateur)
+void deleteFormateur(Long id)
+```
+
+##### CoursService
+**Responsabilités :**
+- CRUD des cours
+- Gestion des associations avec groupes
+- Calcul des statistiques
+
+**Méthodes principales :**
+```java
+List<Cours> getAllCours()
+Optional<Cours> getCoursById(Long id)
+Cours createCours(Cours cours)
+Cours updateCours(Long id, Cours cours)
+void deleteCours(Long id)
+void ajouterGroupe(Long coursId, Long groupeId)
+void retirerGroupe(Long coursId, Long groupeId)
+```
+
+##### InscriptionService
+**Responsabilités :**
+- Gestion des inscriptions
+- Vérification de non-duplication
+- Envoi d'emails de notification
+
+**Méthodes principales :**
+```java
+List<Inscription> getAllInscriptions()
+Inscription inscrireEtudiant(Long etudiantId, Long coursId)
+void annulerInscription(Long inscriptionId)
+void annulerInscription(Long etudiantId, Long coursId)
+List<Inscription> getInscriptionsByEtudiant(Long etudiantId)
+List<Inscription> getInscriptionsByCours(Long coursId)
+```
+
+**Logique métier :**
+- Vérification de l'existence d'une inscription active
+- Réactivation d'une inscription annulée si nécessaire
+- Envoi d'email asynchrone (ne bloque pas l'inscription en cas d'erreur)
+
+##### NoteService
+**Responsabilités :**
+- Attribution de notes
+- Consultation des notes
+
+**Méthodes principales :**
+```java
+List<Note> getAllNotes()
+Note attribuerNote(Long etudiantId, Long coursId, double valeur, String commentaire)
+List<Note> getNotesByEtudiant(Long etudiantId)
+List<Note> getNotesByCours(Long coursId)
+```
+
+##### SeanceService
+**Responsabilités :**
+- Planification des séances
+- Détection de conflits
+- Gestion des emplois du temps
+
+**Méthodes principales :**
+```java
+List<Seance> getAllSeances()
+Seance planifierSeance(Long coursId, LocalDateTime debut, LocalDateTime fin, String salle, String type)
+void updateSeance(Long id, LocalDateTime debut, LocalDateTime fin, String salle, String type)
+void deleteSeance(Long id)
+List<Seance> getSeancesByEtudiant(Long etudiantId)
+List<Seance> getSeancesByFormateur(Long formateurId)
+```
+
+##### ReportingService
+**Responsabilités :**
+- Calcul de statistiques
+- Génération de tableaux de bord
+
+**Méthodes principales :**
+```java
+Map<String, Object> getTableauDeBord()
+Map<String, Object> getStatistiquesEtudiant(Long etudiantId)
+Map<String, Object> getStatistiquesCours(Long coursId)
+List<Cours> getCoursLesPlusSuivis()
+```
+
+##### EmailService
+**Responsabilités :**
+- Envoi d'emails de notification
+- Gestion des erreurs d'envoi
+
+**Méthodes principales :**
+```java
+void envoyerEmailInscription(Etudiant etudiant, Cours cours)
+void envoyerEmailDesinscription(Etudiant etudiant, Cours cours, Formateur formateur)
+```
+
+**Configuration :**
+- Support SMTP (Gmail, Mailtrap)
+- Mode simulation si SMTP non configuré (System.out.println)
+
+##### PDFReportService
+**Responsabilités :**
+- Génération de rapports PDF avec JasperReports
+
+**Méthodes principales :**
+```java
+byte[] genererRapportNotes(Long coursId)
+```
+
+### 3.3 Couche Contrôleur
+
+#### 3.3.1 Contrôleurs Thymeleaf (SSR)
+
+##### AdminController
+**Mapping :** `/admin/**`  
+**Rôle requis :** ADMIN
+
+**Endpoints principaux :**
+- `GET /admin/dashboard` - Tableau de bord
+- `GET /admin/etudiants` - Liste des étudiants
+- `GET /admin/etudiants/new` - Formulaire création étudiant
+- `POST /admin/etudiants` - Création étudiant
+- `GET /admin/etudiants/{id}/edit` - Formulaire modification
+- `POST /admin/etudiants/{id}` - Modification
+- `POST /admin/etudiants/{id}/delete` - Suppression
+- (Mêmes patterns pour formateurs, cours, groupes, spécialités, sessions, séances)
+- `GET /admin/cours/{id}/statistiques` - Statistiques d'un cours
+- `GET /admin/cours/{id}/rapport-pdf` - Génération PDF
+
+##### FormateurController
+**Mapping :** `/formateur/**`  
+**Rôle requis :** FORMATEUR ou ADMIN
+
+**Endpoints principaux :**
+- `GET /formateur/dashboard` - Tableau de bord formateur
+- `GET /formateur/cours` - Liste des cours du formateur
+- `GET /formateur/cours/{id}/notes` - Gestion des notes
+
+##### EtudiantController
+**Mapping :** `/etudiant/**`  
+**Rôle requis :** ETUDIANT ou ADMIN
+
+**Endpoints principaux :**
+- `GET /etudiant/dashboard` - Tableau de bord étudiant
+- `GET /etudiant/cours/disponibles` - Cours disponibles pour inscription
+- `GET /etudiant/cours` - Cours auxquels l'étudiant est inscrit
+- `GET /etudiant/notes` - Notes de l'étudiant
+- `GET /etudiant/emploi-du-temps` - Emploi du temps
+
+##### LoginController
+**Mapping :** `/login`, `/logout`  
+**Accès :** Public
+
+**Endpoints :**
+- `GET /login` - Page de connexion
+- `POST /login` - Traitement de la connexion (géré par Spring Security)
+- `POST /logout` - Déconnexion
+
+##### ProfilController
+**Mapping :** `/profil/**`  
+**Rôle requis :** Authentifié
+
+**Endpoints :**
+- `GET /profil` - Affichage du profil
+- `POST /profil` - Modification du profil
+- `POST /profil/changer-mot-de-passe` - Changement de mot de passe
+
+#### 3.3.2 Contrôleurs REST API
+
+**Mapping de base :** `/api/**`  
+**Format :** JSON  
+**Authentification :** Requise
+
+##### EtudiantRestController
+**Mapping :** `/api/etudiants`
+
+**Endpoints :**
+- `GET /api/etudiants` - Liste des étudiants
+- `GET /api/etudiants/{id}` - Détails d'un étudiant
+- `GET /api/etudiants/matricule/{matricule}` - Recherche par matricule
+- `POST /api/etudiants` - Création
+- `PUT /api/etudiants/{id}` - Modification
+- `DELETE /api/etudiants/{id}` - Suppression
+- `GET /api/etudiants/{id}/moyenne` - Moyenne générale
+
+##### CoursRestController
+**Mapping :** `/api/cours`
+
+**Endpoints :**
+- `GET /api/cours` - Liste des cours
+- `GET /api/cours/{id}` - Détails d'un cours
+- `POST /api/cours` - Création
+- `PUT /api/cours/{id}` - Modification
+- `DELETE /api/cours/{id}` - Suppression
+
+##### InscriptionRestController
+**Mapping :** `/api/inscriptions`
+
+**Endpoints :**
+- `GET /api/inscriptions` - Liste des inscriptions
+- `GET /api/inscriptions/{id}` - Détails
+- `POST /api/inscriptions` - Inscription à un cours
+- `DELETE /api/inscriptions/{id}` - Annulation
+
+##### NoteRestController
+**Mapping :** `/api/notes`
+
+**Endpoints :**
+- `GET /api/notes` - Liste des notes
+- `GET /api/notes/{id}` - Détails
+- `POST /api/notes` - Attribution d'une note
+- `PUT /api/notes/{id}` - Modification
+- `DELETE /api/notes/{id}` - Suppression
+
+##### SeanceRestController
+**Mapping :** `/api/seances`
+
+**Endpoints :**
+- `GET /api/seances` - Liste des séances
+- `GET /api/seances/{id}` - Détails
+- `POST /api/seances` - Planification
+- `PUT /api/seances/{id}` - Modification
+- `DELETE /api/seances/{id}` - Suppression
+
+##### ReportingRestController
+**Mapping :** `/api/reporting`
+
+**Endpoints :**
+- `GET /api/reporting/dashboard` - Tableau de bord
+- `GET /api/reporting/etudiant/{id}` - Statistiques étudiant
+- `GET /api/reporting/cours/{id}` - Statistiques cours
+- `GET /api/reporting/cours-populaires` - Cours les plus suivis
+
+##### ProfilRestController
+**Mapping :** `/api/profil`
+
+**Endpoints :**
+- `GET /api/profil` - Profil de l'utilisateur connecté
+- `PUT /api/profil` - Modification du profil
+- `POST /api/profil/changer-mot-de-passe` - Changement de mot de passe
+
+### 3.4 Configuration
+
+#### 3.4.1 SecurityConfig
+
+**Fonctionnalités :**
+- Configuration de Spring Security
+- Définition des règles d'autorisation par rôle
+- Configuration de l'authentification par formulaire
+- Gestion de la déconnexion
+- Protection CSRF
+
+**Règles d'autorisation :**
+```java
+- "/", "/login", "/css/**", "/js/**", "/h2-console/**" → permitAll()
+- "/profil/**" → authenticated()
+- "/admin/**" → hasRole("ADMIN")
+- "/formateur/**" → hasAnyRole("ADMIN", "FORMATEUR")
+- "/etudiant/**" → hasAnyRole("ADMIN", "ETUDIANT")
+- "/api/**" → authenticated()
+- Autres → authenticated()
+```
+
+**Authentification :**
+- UserDetailsService personnalisé basé sur UtilisateurRepository
+- PasswordEncoder : BCryptPasswordEncoder
+- Page de login : `/login`
+- Redirection après login : `/dashboard`
+
+#### 3.4.2 DataInitializer
+
+**Fonctionnalités :**
+- Initialisation des données de test au démarrage
+- Création d'un compte admin par défaut
+- Création de spécialités, groupes, sessions
+- Création de formateurs et étudiants de test
+
+**Comptes par défaut :**
+- Admin : `admin` / `admin`
+- Formateur : `formateur1` / `formateur1`
+- Étudiant : `etudiant1` / `etudiant1`
+
+#### 3.4.3 application.properties
+
+**Configuration principale :**
+- Port : 8080
+- Base de données : H2 (dev) / MySQL (prod)
+- JPA : `ddl-auto=update`
+- Thymeleaf : cache désactivé en dev
+- Mail : Configuration SMTP (Gmail)
+- Logging : DEBUG pour développement
+
+### 3.5 Diagrammes de Séquence
+
+#### 3.5.1 Inscription d'un Étudiant à un Cours
+
+**Note :** Insérer ici le diagramme de séquence UML pour l'inscription
+
+**Flux :**
+1. Étudiant accède à `/etudiant/cours/disponibles`
+2. Étudiant sélectionne un cours et clique sur "S'inscrire"
+3. POST `/api/inscriptions` ou via formulaire
+4. InscriptionRestController → InscriptionService.inscrireEtudiant()
+5. Vérification de l'existence d'une inscription
+6. Si inscription annulée → réactivation
+7. Si nouvelle inscription → création
+8. Sauvegarde en base de données
+9. Envoi d'email (asynchrone, non bloquant)
+10. Retour de confirmation
+
+#### 3.5.2 Attribution d'une Note
+
+**Note :** Insérer ici le diagramme de séquence UML pour l'attribution de note
+
+**Flux :**
+1. Formateur accède à `/formateur/cours/{id}/notes`
+2. Formulaire de saisie de note
+3. POST avec données (etudiantId, coursId, valeur, commentaire)
+4. FormateurController → NoteService.attribuerNote()
+5. Vérification de l'existence de l'étudiant et du cours
+6. Création ou mise à jour de la note
+7. Sauvegarde en base de données
+8. Retour de confirmation
+
+#### 3.5.3 Planification d'une Séance
+
+**Flux :**
+1. Administrateur accède à `/admin/seances/new`
+2. Formulaire de planification
+3. POST avec données (coursId, dateHeureDebut, dateHeureFin, salle, type)
+4. AdminController → SeanceService.planifierSeance()
+5. Vérification des conflits (optionnel)
+6. Création de la séance
+7. Sauvegarde en base de données
+8. Retour de confirmation
+
+### 3.6 Diagramme de Composants
+
+**Note :** Insérer ici le diagramme de composants UML
+
+**Composants principaux :**
+- **Web Layer** : Controllers (Admin, Formateur, Etudiant, API)
+- **Business Layer** : Services (Etudiant, Cours, Inscription, Note, etc.)
+- **Data Layer** : Repositories (JPA)
+- **Security** : SecurityConfig, UserDetailsService
+- **Presentation** : Thymeleaf Templates, Static Resources
+- **External** : Database (H2/MySQL), SMTP Server
+
+---
+
+## 4. Captures de Réalisation
+
+### 4.1 Diagrammes UML
+
+#### 4.1.1 Diagramme de Cas d'Utilisation
+
+**Note :** Insérer ici le diagramme de cas d'utilisation
+
+**Acteurs :**
+- Administrateur
+- Formateur
+- Étudiant
+
+**Cas d'utilisation principaux :**
+- Gérer les étudiants
+- Gérer les formateurs
+- Gérer les cours
+- S'inscrire à un cours
+- Annuler une inscription
+- Attribuer une note
+- Consulter les notes
+- Planifier une séance
+- Consulter l'emploi du temps
+- Générer un rapport PDF
+- Consulter les statistiques
+
+#### 4.1.2 Diagramme de Classes
+
+**Note :** Insérer ici le diagramme de classes complet avec toutes les entités et leurs relations
+
+#### 4.1.3 Diagramme de Séquence
+
+**Note :** Insérer ici les diagrammes de séquence pour :
+- Inscription d'un étudiant
+- Attribution d'une note
+- Planification d'une séance
+- Authentification
+
+#### 4.1.4 Diagramme de Composants
+
+**Note :** Insérer ici le diagramme de composants montrant l'architecture de l'application
+
+### 4.2 Captures d'Écran
+
+#### 4.2.1 Interface d'Administration
+
+**Page de Connexion**
+- **Note :** Insérer capture d'écran de la page `/login`
+
+**Tableau de Bord Administrateur**
+- **Note :** Insérer capture d'écran de `/admin/dashboard`
+- Affiche : nombre total d'étudiants, cours, formateurs, sessions
+- Liste des cours les plus suivis
+
+**Gestion des Étudiants**
+- **Note :** Insérer capture d'écran de `/admin/etudiants`
+- Liste des étudiants avec actions (modifier, supprimer)
+- Formulaire de création/modification
+
+**Gestion des Formateurs**
+- **Note :** Insérer capture d'écran de `/admin/formateurs`
+- Liste des formateurs avec leurs spécialités
+
+**Gestion des Cours**
+- **Note :** Insérer capture d'écran de `/admin/cours`
+- Liste des cours avec statistiques
+- Formulaire de création avec sélection de formateur, spécialité, session, groupes
+
+**Statistiques d'un Cours**
+- **Note :** Insérer capture d'écran de `/admin/cours/{id}/statistiques`
+- Nombre d'inscrits
+- Taux de réussite
+- Liste des notes
+- Bouton de génération PDF
+
+**Gestion des Séances**
+- **Note :** Insérer capture d'écran de `/admin/seances`
+- Liste des séances planifiées
+- Formulaire de planification avec sélection de cours, date/heure, salle, type
+
+#### 4.2.2 Interface Formateur
+
+**Tableau de Bord Formateur**
+- **Note :** Insérer capture d'écran de `/formateur/dashboard`
+- Vue d'ensemble des cours du formateur
+
+**Gestion des Notes**
+- **Note :** Insérer capture d'écran de `/formateur/cours/{id}/notes`
+- Liste des étudiants inscrits
+- Formulaire d'attribution de notes
+
+#### 4.2.3 Interface Étudiant
+
+**Tableau de Bord Étudiant**
+- **Note :** Insérer capture d'écran de `/etudiant/dashboard`
+- Vue d'ensemble des cours et notes
+
+**Cours Disponibles**
+- **Note :** Insérer capture d'écran de `/etudiant/cours/disponibles`
+- Liste des cours disponibles pour inscription
+- Bouton "S'inscrire" pour chaque cours
+
+**Mes Cours**
+- **Note :** Insérer capture d'écran de `/etudiant/cours`
+- Liste des cours auxquels l'étudiant est inscrit
+- Possibilité d'annuler l'inscription
+
+**Mes Notes**
+- **Note :** Insérer capture d'écran de `/etudiant/notes`
+- Liste des notes par cours
+- Moyenne générale affichée
+
+**Emploi du Temps**
+- **Note :** Insérer capture d'écran de `/etudiant/emploi-du-temps`
+- Calendrier ou liste des séances
+- Affichage : date, heure, cours, salle, type
+
+### 4.3 Tests et Validation
+
+#### 4.3.1 Tests Unitaires
+
+**Note :** Insérer ici les résultats des tests unitaires
+
+**Services testés :**
+- EmailServiceTest
+- InscriptionServiceTest
+
+#### 4.3.2 Tests d'Intégration
+
+**Note :** Insérer ici les résultats des tests d'intégration
+
+**Scénarios testés :**
+- Inscription d'un étudiant à un cours
+- Attribution d'une note
+- Génération de rapport PDF
+
+### 4.4 Déploiement
+
+#### 4.4.1 Configuration Docker
+
+**Note :** Insérer capture d'écran ou description de :
+- docker-compose.yml
+- Dockerfile
+- Déploiement avec Docker Compose
+
+#### 4.4.2 Base de Données
+
+**Note :** Insérer capture d'écran de :
+- Structure des tables dans H2 Console
+- Structure des tables dans MySQL (si applicable)
+
+### 4.5 Fonctionnalités Avancées
+
+#### 4.5.1 Génération de Rapports PDF
+
+**Note :** Insérer capture d'écran d'un rapport PDF généré avec JasperReports
+- Rapport de notes pour un cours
+- Format professionnel avec logo, en-tête, tableau des notes
+
+#### 4.5.2 Envoi d'Emails
+
+**Note :** Insérer capture d'écran ou description de :
+- Email d'inscription reçu
+- Email de désinscription reçu
+- Configuration SMTP
+
+### 4.6 Performance et Optimisation
+
+**Note :** Insérer ici les métriques de performance si disponibles :
+- Temps de réponse des pages
+- Temps de chargement des listes
+- Performance des requêtes SQL
+
+---
+
+## Conclusion
+
+Cette application de gestion de formation offre une solution complète et moderne pour la gestion pédagogique d'un centre de formation. Elle combine une interface web conviviale (SSR avec Thymeleaf) et une API REST pour une utilisation flexible.
+
+### Points Forts
+
+1. **Architecture modulaire** : Séparation claire des responsabilités
+2. **Sécurité robuste** : Authentification et autorisation par rôles
+3. **Double interface** : SSR pour l'administration, API REST pour intégration
+4. **Fonctionnalités complètes** : Gestion complète du cycle de vie pédagogique
+5. **Extensibilité** : Architecture permettant l'ajout facile de nouvelles fonctionnalités
+
+### Améliorations Futures
+
+1. **Notifications en temps réel** : WebSockets pour les notifications
+2. **Interface mobile** : Application mobile native ou PWA
+3. **Analytics avancés** : Tableaux de bord plus détaillés avec graphiques
+4. **Export de données** : Export Excel, CSV
+5. **Gestion de fichiers** : Upload de documents, devoirs
+6. **Chat intégré** : Communication entre formateurs et étudiants
+
+---
+
+**Fin du Rapport**
+
 

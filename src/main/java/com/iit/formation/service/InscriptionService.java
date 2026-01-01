@@ -30,9 +30,6 @@ public class InscriptionService {
     @Autowired
     private EmailService emailService;
     
-    @Autowired
-    private NotificationService notificationService;
-    
     public List<Inscription> getAllInscriptions() {
         return inscriptionRepository.findAll();
     }
@@ -66,21 +63,7 @@ public class InscriptionService {
                 try {
                     emailService.envoyerEmailInscription(inscription.getEtudiant(), inscription.getCours());
                 } catch (Exception e) {
-                    System.err.println("⚠️ Erreur lors de l'envoi de l'email: " + e.getMessage());
-                    e.printStackTrace();
-                }
-                
-                // Créer une notification pour le formateur
-                if (inscription.getCours().getFormateur() != null) {
-                    try {
-                        notificationService.creerNotificationInscription(
-                                inscription.getCours().getFormateur(),
-                                inscription.getCours(),
-                                inscription.getEtudiant()
-                        );
-                    } catch (Exception e) {
-                        System.err.println("⚠️ Erreur lors de la création de la notification: " + e.getMessage());
-                    }
+                    System.err.println("Erreur lors de l'envoi de l'email: " + e.getMessage());
                 }
                 
                 return inscription;
@@ -102,17 +85,7 @@ public class InscriptionService {
             emailService.envoyerEmailInscription(etudiant, cours);
         } catch (Exception e) {
             // Log l'erreur mais ne pas faire échouer l'inscription
-            System.err.println("⚠️ Erreur lors de l'envoi de l'email: " + e.getMessage());
-            e.printStackTrace();
-        }
-        
-        // Créer une notification pour le formateur
-        if (cours.getFormateur() != null) {
-            try {
-                notificationService.creerNotificationInscription(cours.getFormateur(), cours, etudiant);
-            } catch (Exception e) {
-                System.err.println("⚠️ Erreur lors de la création de la notification: " + e.getMessage());
-            }
+            System.err.println("Erreur lors de l'envoi de l'email: " + e.getMessage());
         }
         
         return inscription;
@@ -125,26 +98,12 @@ public class InscriptionService {
         inscription.setStatut(StatutInscription.ANNULEE);
         inscriptionRepository.save(inscription);
         
-        // Notifier le formateur par email
+        // Notifier le formateur
         try {
             emailService.envoyerEmailDesinscription(inscription.getEtudiant(), 
                     inscription.getCours(), inscription.getCours().getFormateur());
         } catch (Exception e) {
-            System.err.println("⚠️ Erreur lors de l'envoi de l'email: " + e.getMessage());
-            e.printStackTrace();
-        }
-        
-        // Créer une notification pour le formateur
-        if (inscription.getCours().getFormateur() != null) {
-            try {
-                notificationService.creerNotificationDesinscription(
-                        inscription.getCours().getFormateur(),
-                        inscription.getCours(),
-                        inscription.getEtudiant()
-                );
-            } catch (Exception e) {
-                System.err.println("⚠️ Erreur lors de la création de la notification: " + e.getMessage());
-            }
+            System.err.println("Erreur lors de l'envoi de l'email: " + e.getMessage());
         }
     }
     

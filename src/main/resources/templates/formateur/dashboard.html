@@ -20,12 +20,6 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <div class="navbar-nav ms-auto">
                     <a class="nav-link" href="/formateur/cours"><i class="bi bi-book-fill"></i> Mes Cours</a>
-                    <a class="nav-link position-relative" href="/formateur/notifications">
-                        <i class="bi bi-bell-fill"></i> Notifications
-                        <span th:if="${nombreNotifications != null and nombreNotifications > 0}" 
-                              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                              th:text="${nombreNotifications}">0</span>
-                    </a>
                     <a class="nav-link" href="/profil"><i class="bi bi-person-circle"></i> Mon Profil</a>
                     <form th:action="@{/logout}" method="post" style="display:inline;">
                         <button type="submit" class="nav-link btn btn-link" style="border:none; background:none; color:rgba(255,255,255,.55); padding:0.5rem 1rem;">
@@ -41,54 +35,6 @@
         <h1 class="page-title" style="color: white; -webkit-text-fill-color: white; background: none;">
             <i class="bi bi-speedometer2"></i> Tableau de bord - Formateur
         </h1>
-        
-        <div th:if="${error != null}" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${error}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        
-        <!-- Notifications récentes -->
-        <div th:if="${notifications != null and !notifications.isEmpty()}" class="row mb-4">
-            <div class="col-md-12">
-                <div class="card border-warning">
-                    <div class="card-header bg-warning text-dark">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">
-                                <i class="bi bi-bell-fill"></i> Notifications récentes
-                                <span class="badge bg-danger" th:text="${nombreNotifications}">0</span>
-                            </h5>
-                            <a href="/formateur/notifications" class="btn btn-sm btn-dark">
-                                <i class="bi bi-arrow-right"></i> Voir toutes
-                            </a>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="list-group">
-                            <div th:each="notification : ${notifications}" 
-                                 th:if="${!notification.lue}"
-                                 class="list-group-item list-group-item-action"
-                                 th:classappend="${!notification.lue ? 'list-group-item-warning' : ''}">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <div>
-                                        <h6 class="mb-1">
-                                            <i th:if="${notification.type.name() == 'INSCRIPTION'}" class="bi bi-person-plus-fill text-success"></i>
-                                            <i th:if="${notification.type.name() == 'DESINSCRIPTION'}" class="bi bi-person-dash-fill text-danger"></i>
-                                            <span th:text="${notification.message}"></span>
-                                        </h6>
-                                        <small class="text-muted">
-                                            <i class="bi bi-book"></i> <span th:text="${notification.cours.titre}"></span>
-                                            <span class="mx-2">•</span>
-                                            <i class="bi bi-person"></i> <span th:text="${notification.etudiant.prenom + ' ' + notification.etudiant.nom}"></span>
-                                        </small>
-                                    </div>
-                                    <small th:text="${#temporals.format(notification.dateCreation, 'dd/MM/yyyy HH:mm')}"></small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
         
         <div class="row">
             <div class="col-md-12">
